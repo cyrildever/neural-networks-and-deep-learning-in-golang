@@ -1,0 +1,70 @@
+package network
+
+import (
+	"errors"
+	"neuraldeep/activation"
+	"neuraldeep/utils"
+	"neuraldeep/utils/matrix"
+
+	"gonum.org/v1/gonum/mat"
+)
+
+//--- TYPES
+
+// Network ...
+type Network struct {
+	Sizes     []int
+	numLayers int
+	weights   []mat.Matrix
+	biases    []mat.Matrix
+}
+
+// Init ...
+// The list `sizes` contains the number of neurons in the respective layers of the network.
+// For example, if the list was [2, 3, 1] then it would be a three-layer network, with the
+// first layer containing 2 neurons, the second layer 3 neurons, and the third layer 1 neuron.
+// The biases and weights for the network are initialized randomly, using a Gaussian distribution
+// with mean 0, and variance 1. Note that the first layer is assumed to be an input layer, and by
+// convention we won’t set any biases for those neurons, since biases are only ever used in computing
+// the outputs from later layers.
+func Init(sizes []int) (n *Network, err error) {
+	if len(sizes) < 2 {
+		err = errors.New("not enough layers")
+		return
+	}
+	biases := make([]mat.Matrix, len(sizes)-1)
+	for _, size := range sizes[1:] {
+		biases = append(biases, matrix.Random(size, 1, 2))
+	}
+	tuples, err := utils.Zip(sizes[:len(sizes)-1], sizes[1:])
+	if err != nil {
+		return
+	}
+	weights := make([]mat.Matrix, len(tuples))
+	for _, tuple := range tuples {
+		weights = append(weights, matrix.Random(tuple.J, tuple.I, 2))
+	}
+	return &Network{
+		Sizes:     sizes,
+		numLayers: len(sizes),
+		weights:   weights,
+		biases:    biases,
+	}, nil
+}
+
+//--- METHODS
+
+// FeedForward returns the output of the network if `a` is input.
+func (n *Network) FeedForward(a mat.Vector) mat.Matrix {
+	output := a.T()
+	for i := 0; i < n.NumLayers(); i++ {
+		// sigmoid(wa + b)
+		output = matrix.Apply(activation.Sigmoid, matrix.Add(matrix.Dot(n.weights[i], output), n.biases[i]))
+	}
+	return output
+}
+
+// NumLayers ...
+func (n *Network) NumLayers() int {
+	return n.numLayers
+}
