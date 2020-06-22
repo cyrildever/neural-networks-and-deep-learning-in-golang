@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"neuraldeep/network"
@@ -12,10 +13,13 @@ import (
 
 // Usage:
 //
-// $ ./neuraldeep -layers 2,3,1
+// $ ./neuraldeep --layers 6,50,20,3 --data "1,2.4,3,4,5,-6"
 func main() {
+	// Parse command line arguments
 	operation := flag.String("o", "feedforward", "operation to proceed")
-	layersStr := flag.String("layers", "", "comma-separated list of number of neurons per layer")
+	layersStr := flag.String("layers", "", "comma-separated list of number of neurons per layer (the first one being the size of the input layer)")
+	dataStr := flag.String("data", "", "a single data set to feed the first layer (float64 number in a comma-separated list of size of the input layer")
+	src := flag.String("src", "", "the source file to use as input data")
 	flag.Parse()
 
 	// Initialize the network
@@ -28,19 +32,43 @@ func main() {
 		}
 		sizes = append(sizes, size)
 	}
-
 	n, err := network.Init(sizes)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("nb of layers in the network: %d", n.NumLayers())
+	lastLayerSize := sizes[len(sizes)-1]
+	fmt.Printf("network ready [nbOfLayers=%d, outputSize=%d]\n", n.NumLayers(), lastLayerSize)
 
-	// Forward propagation
+	// Get the input data
+	var inputs []float64
+	if *dataStr != "" && *src == "" {
+		// Read from command line
+		data := strings.Split(*dataStr, ",")
+		for _, d := range data {
+			input, err := strconv.ParseFloat(d, 64)
+			if err != nil {
+				panic(err)
+			}
+			inputs = append(inputs, input)
+		}
+	} else if *src == "" {
+		// Retrieve from file
+		// TODO ####
+	}
+
+	// Process the operation
 	switch *operation {
 	case "feedforward":
-		a := mat.NewVecDense(10, []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}) // DEBUG
+		// Forward propagation
+		a := mat.NewVecDense(len(inputs), inputs)
 		output := n.FeedForward(a)
-		fmt.Println(output) // DEBUG
+		_, c := output.Dims()
+		if c != lastLayerSize {
+			panic(errors.New("size mismatch in result"))
+		}
+		for i := 0; i < c; i++ {
+			fmt.Printf("output neuron #%d: %f\n", i+1, output.At(0, i))
+		}
 	default:
 		fmt.Println("invalid operation")
 	}

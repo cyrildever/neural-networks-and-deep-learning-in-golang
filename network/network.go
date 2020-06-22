@@ -32,18 +32,23 @@ func Init(sizes []int) (n *Network, err error) {
 		err = errors.New("not enough layers")
 		return
 	}
+
+	// Biases
 	biases := make([]mat.Matrix, len(sizes)-1)
-	for _, size := range sizes[1:] {
-		biases = append(biases, matrix.Random(size, 1, 2))
+	for i, size := range sizes[1:] {
+		biases[i] = matrix.Random(1, size, 2)
 	}
+
+	// Weights
 	tuples, err := utils.Zip(sizes[:len(sizes)-1], sizes[1:])
 	if err != nil {
 		return
 	}
 	weights := make([]mat.Matrix, len(tuples))
-	for _, tuple := range tuples {
-		weights = append(weights, matrix.Random(tuple.J, tuple.I, 2))
+	for i, tuple := range tuples {
+		weights[i] = matrix.Random(tuple.J, tuple.I, 2)
 	}
+
 	return &Network{
 		Sizes:     sizes,
 		numLayers: len(sizes),
@@ -55,11 +60,11 @@ func Init(sizes []int) (n *Network, err error) {
 //--- METHODS
 
 // FeedForward returns the output of the network if `a` is input.
-func (n *Network) FeedForward(a mat.Vector) mat.Matrix {
-	output := a.T()
-	for i := 0; i < n.NumLayers(); i++ {
-		// sigmoid(wa + b)
-		output = matrix.Apply(activation.Sigmoid, matrix.Add(matrix.Dot(n.weights[i], output), n.biases[i]))
+func (n *Network) FeedForward(a mat.Vector) (output mat.Matrix) {
+	output = a.T()
+	for i := 0; i < n.NumLayers()-1; i++ {
+		// // sigmoid(wa + b)
+		output = matrix.Apply(activation.Sigmoid, matrix.Add(matrix.Dot(n.weights[i], output.T()).T(), n.biases[i]))
 	}
 	return output
 }
