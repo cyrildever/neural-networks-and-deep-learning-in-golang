@@ -9,7 +9,7 @@ import (
 
 // see https://sausheong.github.io/posts/how-to-build-a-simple-artificial-neural-network-with-go
 
-// Add ...
+// Add computes the addition of two matrices.
 func Add(m, n mat.Matrix) mat.Matrix {
 	r, c := m.Dims()
 	o := mat.NewDense(r, c, nil)
@@ -17,7 +17,7 @@ func Add(m, n mat.Matrix) mat.Matrix {
 	return o
 }
 
-// Apply apply a function to each elements of a matrix.
+// Apply applies a function to each elements of a matrix.
 func Apply(fn func(i, j int, v float64) float64, m mat.Matrix) mat.Matrix {
 	r, c := m.Dims()
 	o := mat.NewDense(r, c, nil)
@@ -25,7 +25,7 @@ func Apply(fn func(i, j int, v float64) float64, m mat.Matrix) mat.Matrix {
 	return o
 }
 
-// Dot ...
+// Dot computes the dot product between two matrices.
 func Dot(m, n mat.Matrix) mat.Matrix {
 	r, _ := m.Dims()
 	_, c := n.Dims()

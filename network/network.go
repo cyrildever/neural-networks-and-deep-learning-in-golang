@@ -11,7 +11,8 @@ import (
 
 //--- TYPES
 
-// Network ...
+// Network defines the neural network structure by instantiating it with an array of sizes,
+// ie. the number of neurons per layer
 type Network struct {
 	Sizes     []int
 	numLayers int
@@ -69,7 +70,7 @@ func (n *Network) FeedForward(a mat.Vector) (output mat.Matrix) {
 	return output
 }
 
-// NumLayers ...
+// NumLayers returns the number of layers in the network.
 func (n *Network) NumLayers() int {
 	return n.numLayers
 }
