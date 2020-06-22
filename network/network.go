@@ -64,7 +64,7 @@ func Init(sizes []int) (n *Network, err error) {
 func (n *Network) FeedForward(a mat.Vector) (output mat.Matrix) {
 	output = a.T()
 	for i := 0; i < n.NumLayers()-1; i++ {
-		// // sigmoid(wa + b)
+		// sigmoid(w·a + b)
 		output = matrix.Apply(activation.Sigmoid, matrix.Add(matrix.Dot(n.weights[i], output.T()).T(), n.biases[i]))
 	}
 	return output
