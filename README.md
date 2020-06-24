@@ -18,6 +18,8 @@ $ go build
 $ ./neuraldeep --layers 6,50,20,3 --data "1,2.4,3,4,5,-6"
 ```
 
+_NB: Instead of using the provided 'mnist.pkl.gz' file, I used the original MNIST set [in CSV](https://pjreddie.com/projects/mnist-in-csv/) as provided by Joseph Redmon and zipped the test and the train sets in the 'data' folder.
+
 
 ## License
 
