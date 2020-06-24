@@ -9,7 +9,7 @@ type IntTuple struct {
 	I, J int
 }
 
-// Zip ...
+// Zip proceed like Python's zip function
 func Zip(a, b []int) ([]IntTuple, error) {
 	if len(a) != len(b) {
 		return nil, errors.New("arguments must be of same length")
