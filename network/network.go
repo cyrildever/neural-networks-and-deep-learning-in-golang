@@ -2,6 +2,7 @@ package network
 
 import (
 	"errors"
+	"math"
 	"neuraldeep/activation"
 	"neuraldeep/utils"
 	"neuraldeep/utils/matrix"
@@ -59,6 +60,29 @@ func Init(sizes []int) (n *Network, err error) {
 }
 
 //--- METHODS
+
+// Evaluate returns the number of test inputs for which the neural network outputs the correct result.
+// Note that the neural network's output is assumed to be the index of whichever neuron in the final layer has the highest activation.
+func (n *Network) Evaluate(test Dataset) (sum int) {
+	for _, input := range test {
+		a := mat.NewVecDense(len(input.Data), input.Data)
+		output := n.FeedForward(a)
+		max := mat.Max(output)
+		r, _ := output.Dims()
+		col := mat.Col(nil, r, output)
+		var result int
+		for idx, val := range col {
+			if val == max {
+				result = idx
+				break
+			}
+		}
+		if result == int(math.Round(input.Label)) {
+			sum++
+		}
+	}
+	return
+}
 
 // FeedForward returns the output of the network if `a` is input.
 func (n *Network) FeedForward(a mat.Vector) (output mat.Matrix) {

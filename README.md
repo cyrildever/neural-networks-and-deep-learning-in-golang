@@ -2,6 +2,8 @@
 
 Code freely adaptated from Michael Nielsen's ["Neural Networks and Deep Learning"](http://neuralnetworksanddeeplearning.com/) book in Go.
 
+_NB: Instead of using the 'mnist.pkl.gz' file, I used the MNIST set [in CSV](https://pjreddie.com/projects/mnist-in-csv/) as provided by Joseph Redmon and zipped the test and the train sets in the 'data' folder._
+
 
 ### Installation
 
@@ -15,10 +17,24 @@ $ go build
 ### Usage
 
 ```console
-$ ./neuraldeep --layers 6,50,20,3 --data "1,2.4,3,4,5,-6"
+$ ./neuraldeep --layers 6,50,20,3 --data "1,2.4,3,4,5,-6" --label 3
 ```
 
-_NB: Instead of using the provided 'mnist.pkl.gz' file, I used the original MNIST set [in CSV](https://pjreddie.com/projects/mnist-in-csv/) as provided by Joseph Redmon and zipped the test and the train sets in the 'data' folder.
+```
+Usage of ./neuraldeep:
+  -data string
+        a single data set to feed the first layer (a comma-separated list of float64), or the name of the MNIST set
+  -label string
+        the label/target of the passed value as a float64 number
+  -layers string
+        comma-separated list of number of neurons per layer (the first one being the size of the input layer)
+  -o string
+        operation to proceed: predict | test | train (default "predict")
+  -src string
+        the source file to use as input data
+  -useMNIST
+        set to true to use MNIST dataset (the layers flag should start with 784 and end with 10)
+```
 
 
 ## License
