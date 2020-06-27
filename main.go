@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"gonum.org/v1/gonum/mat"
 )
 
 // Usage:
@@ -23,7 +21,7 @@ func main() {
 	// Parse command line arguments
 	operation := flag.String("op", "", "operation to proceed: predict | test | train")
 	layersStr := flag.String("layers", "", "comma-separated list of number of neurons per layer (the first one being the size of the input layer)")
-	dataStr := flag.String("data", "", "a single data set to feed the first layer (a comma-separated list of float64), or the name of the MNIST set")
+	dataStr := flag.String("data", "", "a single data set to feed the first layer (a comma-separated list of float64), or the name of the MNIST set (test | training | validation)")
 	labelStr := flag.String("label", "", "the label/target of the passed value as a float64 number")
 	src := flag.String("src", "", "the source file to use as input data")
 	useMNIST := flag.Bool("useMNIST", false, "set to true to use MNIST dataset (the layers flag should start with 784 and end with 10)")
@@ -39,12 +37,12 @@ func main() {
 		}
 		sizes = append(sizes, size)
 	}
-	n, err := network.Init(sizes)
+	net, err := network.Init(sizes)
 	if err != nil {
 		panic(err)
 	}
 	lastLayerSize := sizes[len(sizes)-1]
-	fmt.Printf("network ready [nbOfLayers=%d, outputSize=%d]\n", n.NumLayers(), lastLayerSize)
+	fmt.Printf("network ready [nbOfLayers=%d, outputSize=%d]\n", net.NumLayers(), lastLayerSize)
 
 	// Get the input data
 	dataset := network.Dataset{}
@@ -100,8 +98,8 @@ func main() {
 			elapsed := time.Since(t0)
 			fmt.Printf("elapsed: %d ms\n", elapsed.Milliseconds())
 		} else {
-			a := mat.NewVecDense(len(dataset[0].Data), dataset[0].Data)
-			output := n.FeedForward(a)
+			a := dataset[0].ToVector()
+			output := net.FeedForward(a)
 			_, c := output.Dims()
 			if c != lastLayerSize {
 				panic(errors.New("size mismatch in result"))
@@ -115,7 +113,7 @@ func main() {
 		}
 	case "test":
 		fmt.Println("testing...")
-		sum := n.Evaluate(dataset)
+		sum := net.Evaluate(dataset)
 		elapsed := time.Since(t0)
 		fmt.Printf("elapsed: %d ms\n", elapsed.Milliseconds())
 		fmt.Printf("nbOfCorrectResults: %d\n", sum)

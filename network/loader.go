@@ -9,14 +9,9 @@ import (
 	"strconv"
 )
 
-// Input ...
-type Input struct {
-	Data  []float64
-	Label float64
-}
-
-// Dataset ...
-type Dataset []Input
+const (
+	sizeLine = 1 + 784 // label + image pixels
+)
 
 // LoadData ...
 func LoadData() (training Dataset, validation Dataset, test Dataset, err error) {
@@ -83,8 +78,6 @@ func LoadData() (training Dataset, validation Dataset, test Dataset, err error) 
 	}
 	return
 }
-
-const sizeLine = 1 + 784 // label + image pixels
 
 func readLine(record []string) (input Input, err error) {
 	data := make([]float64, sizeLine)

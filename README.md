@@ -23,13 +23,13 @@ $ ./neuraldeep --layers 6,50,20,3 --data "1,2.4,3,4,5,-6" --label 3
 ```
 Usage of ./neuraldeep:
   -data string
-        a single data set to feed the first layer (a comma-separated list of float64), or the name of the MNIST set
+        a single data set to feed the first layer (a comma-separated list of float64), or the name of the MNIST set (test | training | validation)
   -label string
         the label/target of the passed value as a float64 number
   -layers string
         comma-separated list of number of neurons per layer (the first one being the size of the input layer)
-  -o string
-        operation to proceed: predict | test | train (default "predict")
+  -op string
+        operation to proceed: predict | test | train
   -src string
         the source file to use as input data
   -useMNIST

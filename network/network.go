@@ -65,8 +65,8 @@ func Init(sizes []int) (n *Network, err error) {
 // Note that the neural network's output is assumed to be the index of whichever neuron in the final layer has the highest activation.
 func (n *Network) Evaluate(test Dataset) (sum int) {
 	for _, input := range test {
-		a := mat.NewVecDense(len(input.Data), input.Data)
-		output := n.FeedForward(a)
+		testData := input.ToVector()
+		output := n.FeedForward(testData)
 		max := mat.Max(output)
 		r, _ := output.Dims()
 		col := mat.Col(nil, r, output)
