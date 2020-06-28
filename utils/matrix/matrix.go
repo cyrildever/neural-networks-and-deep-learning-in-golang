@@ -34,6 +34,14 @@ func Dot(m, n mat.Matrix) mat.Matrix {
 	return o
 }
 
+// Multiply multiplies two matrices together.
+func Multiply(m, n mat.Matrix) mat.Matrix {
+	r, c := m.Dims()
+	o := mat.NewDense(r, c, nil)
+	o.MulElem(m, n)
+	return o
+}
+
 // Random initializes a matrix of `r` rows and `c` columns with randomized values of mean `v`.
 func Random(r, c int, v float64) mat.Matrix {
 	boundary := 1 / math.Sqrt(v) // To get a variance of 1 around a mean of v
@@ -46,4 +54,12 @@ func Random(r, c int, v float64) mat.Matrix {
 		data[i] = dist.Rand()
 	}
 	return mat.NewDense(r, c, data)
+}
+
+// Substract computes the substraction of two matrices.
+func Substract(m, n mat.Matrix) *mat.Dense {
+	r, c := m.Dims()
+	o := mat.NewDense(r, c, nil)
+	o.Sub(m, n)
+	return o
 }

@@ -2,6 +2,7 @@ package network
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"neuraldeep/activation"
 	"neuraldeep/utils"
@@ -9,6 +10,10 @@ import (
 
 	"gonum.org/v1/gonum/mat"
 )
+
+// A module to implement the stochastic gradient descent learning algorithm for a feedforward neural network.
+// Gradients are calculated using backpropagation.
+// Note that I tried to stay as close as possible to Michael Nielsen's Python module.
 
 //--- TYPES
 
@@ -20,6 +25,135 @@ type Network struct {
 	weights   []mat.Matrix
 	biases    []mat.Matrix
 }
+
+//--- METHODS
+
+// Backprop returns a tuple representing the gradient of the cost function `C_x`.
+// 'biasesByLayer' and 'weightsByLayer' are layer-by-layer lists of matrices, similar to `Network.biases` and `Network.weights`.
+func (net *Network) Backprop(x Input) (biasesByLayer, weightsByLayer []mat.Matrix, err error) {
+	for _, b := range net.biases {
+		r, c := b.Dims()
+		data := make([]float64, r*c)
+		biasesLayer := mat.NewDense(r, c, data)
+		biasesByLayer = append(biasesByLayer, biasesLayer)
+	}
+	for _, w := range net.weights {
+		weightsLayer := mat.DenseCopyOf(w)
+		weightsLayer.Reset()
+		weightsByLayer = append(weightsByLayer, weightsLayer)
+	}
+	// Feedforward
+	activations := []mat.Matrix{x.ToVector().T()}
+	zs := []mat.Matrix{}
+	output := activations[0]
+	for i := 0; i < net.NumLayers()-1; i++ {
+		z := matrix.Add(matrix.Dot(net.weights[i], output.T()).T(), net.biases[i])
+		zs = append(zs, z)
+		output = matrix.Apply(activation.Sigmoid, z)
+		activations = append(activations, output)
+	}
+	// Backward pass
+	delta := matrix.Multiply(net.CostDerivative(activations[len(activations)-1], x.Label.Vector).T(), matrix.Apply(activation.SigmoidPrime, zs[len(zs)-1]))
+	biasesByLayer[len(biasesByLayer)-1] = delta
+	weightsByLayer[len(weightsByLayer)-1] = matrix.Dot(delta, activations[len(activations)-2].T())
+	for l := range utils.XRange(2, net.NumLayers(), 1) {
+		z := zs[len(zs)-l]
+		sp := matrix.Apply(activation.Sigmoid, z)
+		delta = matrix.Multiply(matrix.Dot(net.weights[len(net.weights)-l+1], delta), sp)
+		biasesByLayer[len(biasesByLayer)-l] = delta
+		weightsByLayer[len(weightsByLayer)-l] = matrix.Dot(delta, activations[len(activations)-l-1].T())
+	}
+	return
+}
+
+// CostDerivative returns the vector of partial derivatives `𝛿C_x / 𝛿a` for the output activations.
+func (net *Network) CostDerivative(outputActivations mat.Matrix, y mat.Vector) mat.Vector {
+	return matrix.Substract(outputActivations, y.T()).ColView(0)
+}
+
+// Evaluate returns the number of test inputs for which the neural network outputs the correct result.
+// Note that the neural network's output is assumed to be the index of whichever neuron in the final layer has the highest activation.
+func (net *Network) Evaluate(test Dataset) (sum int) {
+	for _, input := range test {
+		testData := input.ToVector()
+		output := net.FeedForward(testData)
+		max := mat.Max(output)
+		r, _ := output.Dims()
+		col := mat.Col(nil, r, output)
+		var result int
+		for idx, val := range col {
+			if val == max {
+				result = idx
+				break
+			}
+		}
+		if result == int(math.Round(input.Label.Value)) {
+			sum++
+		}
+	}
+	return
+}
+
+// FeedForward returns the output of the network if `a` is input.
+func (net *Network) FeedForward(a mat.Vector) (output mat.Matrix) {
+	output = a.T()
+	for i := 0; i < net.NumLayers()-1; i++ {
+		// sigmoid(w·a + b)
+		output = matrix.Apply(activation.Sigmoid, matrix.Add(matrix.Dot(net.weights[i], output.T()).T(), net.biases[i]))
+	}
+	return output
+}
+
+// SGD trains the neural network using mini-batch stochastic gradient descent.
+// The 'training' dataset is a list of `Input` tuples representing the training data and the desired outputs.
+// The other non-optional parameters are self-explanatory.
+// If 'test' dataset is provided then the network will be evaluated against the test data after each epoch,
+// and partial progress printed out. This is useful for tracking progress, but slows things down substantially.
+func (net *Network) SGD(training Dataset, epochs int, miniBatchSize int, eta float64, test ...Dataset) {
+	var (
+		nTest int
+		n     int
+	)
+	if len(test) > 0 {
+		nTest = len(test[0])
+	}
+	n = len(training)
+	for j := 0; j < epochs; j++ {
+		training.Shuffle()
+		var miniBatches []Dataset
+		for k := range utils.XRange(0, n, miniBatchSize) {
+			miniBatch := training[k : k+miniBatchSize]
+			miniBatches = append(miniBatches, miniBatch)
+		}
+		for _, miniBatch := range miniBatches {
+			net.UpdateMiniBatch(miniBatch, eta)
+		}
+		if len(test) > 0 {
+			fmt.Printf("Epoch %d: %d / %d\n", j, net.Evaluate(test[0]), nTest)
+		} else {
+			fmt.Printf("Epoch %d complete\n", j)
+		}
+	}
+}
+
+// UpdateMiniBatch updates the network's weights and biases by applying gradient descent
+// using backpropagation to a single mini batch.
+// The 'miniBatch' is a list of `Inputs`, and 'eta' is the learning rate.
+func (net *Network) UpdateMiniBatch(miniBatch Dataset, eta float64) {
+	// TODO ######################
+}
+
+// NumLayers is utility method returning the number of layers in the network.
+func (net *Network) NumLayers() int {
+	return net.numLayers
+}
+
+// OutputSize returns the size of the last layer.
+func (net *Network) OutputSize() int {
+	return net.Sizes[net.NumLayers()-1]
+}
+
+//--- FUNCTIONS
 
 // Init ...
 // The list `sizes` contains the number of neurons in the respective layers of the network.
@@ -57,44 +191,4 @@ func Init(sizes []int) (n *Network, err error) {
 		weights:   weights,
 		biases:    biases,
 	}, nil
-}
-
-//--- METHODS
-
-// Evaluate returns the number of test inputs for which the neural network outputs the correct result.
-// Note that the neural network's output is assumed to be the index of whichever neuron in the final layer has the highest activation.
-func (n *Network) Evaluate(test Dataset) (sum int) {
-	for _, input := range test {
-		testData := input.ToVector()
-		output := n.FeedForward(testData)
-		max := mat.Max(output)
-		r, _ := output.Dims()
-		col := mat.Col(nil, r, output)
-		var result int
-		for idx, val := range col {
-			if val == max {
-				result = idx
-				break
-			}
-		}
-		if result == int(math.Round(input.Label)) {
-			sum++
-		}
-	}
-	return
-}
-
-// FeedForward returns the output of the network if `a` is input.
-func (n *Network) FeedForward(a mat.Vector) (output mat.Matrix) {
-	output = a.T()
-	for i := 0; i < n.NumLayers()-1; i++ {
-		// sigmoid(w·a + b)
-		output = matrix.Apply(activation.Sigmoid, matrix.Add(matrix.Dot(n.weights[i], output.T()).T(), n.biases[i]))
-	}
-	return output
-}
-
-// NumLayers returns the number of layers in the network.
-func (n *Network) NumLayers() int {
-	return n.numLayers
 }

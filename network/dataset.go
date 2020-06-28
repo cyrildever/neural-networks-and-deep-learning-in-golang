@@ -28,6 +28,15 @@ type Label struct {
 
 //--- METHODS
 
+// Shuffle ...
+func (ds Dataset) Shuffle() {
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	for i := len(ds); i > 0; i-- {
+		j := r.Intn(i + 1)
+		ds[i], ds[j] = ds[j], ds[i]
+	}
+}
+
 // ToVector ...
 func (i *Input) ToVector() mat.Vector {
 	return mat.NewVecDense(len(i.Data), i.Data)
