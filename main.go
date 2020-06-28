@@ -78,9 +78,9 @@ func main() {
 				if err != nil {
 					panic(err)
 				}
-				input.Label = label
+				input.Label = network.ToLabel(label, net.OutputSize())
 			}
-			dataset = append(dataset, input)
+			dataset = append(dataset, &input)
 		} else if *src == "" {
 			// Retrieve from file
 			// TODO ####

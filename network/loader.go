@@ -13,7 +13,9 @@ const (
 	sizeLine = 1 + 784 // label + image pixels
 )
 
-// LoadData ...
+// LoadData mixes Michael Nielsen's load_data() and load_data_wrapper() functions into one through the use of the `Input` object.
+// Another difference is that we aren't actually using slightly different formats for the training data and the validation / test data,
+// ie. the `Input.Label` field will hold both the digital value of the classification and the 10-dimensional vector.
 func LoadData() (training Dataset, validation Dataset, test Dataset, err error) {
 	_, err = utils.Unzip("./data/mnist_train.zip", "./data/loaded/")
 	if err != nil {
@@ -35,17 +37,17 @@ func LoadData() (training Dataset, validation Dataset, test Dataset, err error) 
 		if e == io.EOF {
 			break
 		}
-		input, e := readLine(record)
+		input, e := readLine(record, 10)
 		if e != nil {
 			err = e
 			return
 		}
 		if line < sizeTraining {
 			// Training data
-			training[line] = input
+			training[line] = &input
 		} else {
 			// Validation data
-			validation[line-sizeTraining] = input
+			validation[line-sizeTraining] = &input
 		}
 		line++
 	}
@@ -68,18 +70,18 @@ func LoadData() (training Dataset, validation Dataset, test Dataset, err error) 
 		if e == io.EOF {
 			break
 		}
-		input, e := readLine(record)
+		input, e := readLine(record, 10)
 		if e != nil {
 			err = e
 			return
 		}
-		test[line] = input
+		test[line] = &input
 		line++
 	}
 	return
 }
 
-func readLine(record []string) (input Input, err error) {
+func readLine(record []string, size int) (input Input, err error) {
 	data := make([]float64, sizeLine)
 	for i := 0; i < sizeLine; i++ {
 		d, e := strconv.ParseFloat(record[i], 64)
@@ -91,7 +93,7 @@ func readLine(record []string) (input Input, err error) {
 	}
 	input = Input{
 		Data:  data[1:],
-		Label: data[0],
+		Label: ToLabel(data[0], size),
 	}
 	return
 }
