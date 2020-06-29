@@ -29,7 +29,7 @@ func main() {
 	miniBatchSize := flag.Int("size", 10, "mini-batch size")
 	eta := flag.Float64("eta", 0.1, "learning rate")
 	load := flag.Bool("load", false, "set to `true` if you want to load an existing network")
-	pathToExisting := flag.String("path", "./data/saved/network.model", "path to the existing file")
+	pathToExisting := flag.String("path", "./data/saved/network/", "path to the existing file")
 
 	flag.Parse()
 
@@ -39,27 +39,33 @@ func main() {
 
 	// Initialize the network
 	var net *network.Network
-	var lastLayerSize int
-	if *load {
-		/// TODO ####
-		fmt.Println("loading from", *pathToExisting)
-	} else {
-		layers := strings.Split(*layersStr, ",")
-		var sizes []int
-		for _, layer := range layers {
-			size, err := strconv.Atoi(layer)
-			if err != nil {
-				panic(err)
-			}
-			sizes = append(sizes, size)
+	layers := strings.Split(*layersStr, ",")
+	var sizes []int
+	for _, layer := range layers {
+		size, err := strconv.Atoi(layer)
+		if err != nil {
+			panic(err)
 		}
+		sizes = append(sizes, size)
+	}
+	if *load {
+		fmt.Println("loading from", *pathToExisting)
+		n, err := network.Init(sizes)
+		if err != nil {
+			panic(err)
+		}
+		if err := network.Load(n, *pathToExisting); err != nil {
+			panic(err)
+		}
+		net = n
+	} else {
 		n, err := network.Init(sizes)
 		if err != nil {
 			panic(err)
 		}
 		net = n
-		lastLayerSize = sizes[len(sizes)-1]
 	}
+	lastLayerSize := sizes[len(sizes)-1]
 	fmt.Printf("network ready [nbOfLayers=%d, outputSize=%d]\n", net.NumLayers(), lastLayerSize)
 
 	// Get the input data

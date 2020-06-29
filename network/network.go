@@ -175,6 +175,8 @@ func (net *Network) UpdateMiniBatch(miniBatch Dataset, eta float64) {
 	}
 }
 
+//---
+
 // NumLayers is utility method returning the number of layers in the network.
 func (net *Network) NumLayers() int {
 	return net.numLayers
@@ -189,7 +191,6 @@ func (net *Network) OutputSize() int {
 func (net *Network) Save() error {
 	for i, biases := range net.biases {
 		filepath := fmt.Sprintf("./data/saved/network/biases%d.layer", i)
-		fmt.Println(filepath) // ####
 		if f, err := os.Create(filepath); err == nil {
 			if b, ok := biases.(*mat.Dense); ok {
 				_, e := b.MarshalBinaryTo(f)
@@ -254,4 +255,36 @@ func Init(sizes []int) (n *Network, err error) {
 		weights:   weights,
 		biases:    biases,
 	}, nil
+}
+
+// Load populates a network from saved data.
+func Load(to *Network, path string) error {
+	i := 0
+	for {
+		filepath := fmt.Sprintf(path+"weights%d.layer", i)
+		f, err := os.Open(filepath)
+		if err != nil {
+			break
+		}
+		defer f.Close()
+		w := mat.DenseCopyOf(to.weights[i])
+		w.Reset()
+		if _, err = w.UnmarshalBinaryFrom(f); err != nil {
+			panic(err)
+		}
+		to.weights[i] = w
+		i++
+	}
+	for j := 0; j < i; j++ {
+		filepath := fmt.Sprintf(path+"biases%d.layer", j)
+		if f, err := os.Open(filepath); err == nil {
+			b := mat.DenseCopyOf(to.biases[j])
+			b.Reset()
+			if _, err := b.UnmarshalBinaryFrom(f); err == nil {
+				to.biases[j] = b
+			}
+			f.Close()
+		}
+	}
+	return nil
 }
