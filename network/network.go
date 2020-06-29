@@ -30,7 +30,7 @@ type Network struct {
 
 // Backprop returns a tuple representing the gradient of the cost function `C_x`.
 // 'biasesByLayer' and 'weightsByLayer' are layer-by-layer lists of matrices, similar to `Network.biases` and `Network.weights`.
-func (net *Network) Backprop(x Input) (biasesByLayer, weightsByLayer []mat.Matrix, err error) {
+func (net *Network) Backprop(x *Input) (biasesByLayer, weightsByLayer []mat.Matrix) {
 	for _, b := range net.biases {
 		r, c := b.Dims()
 		data := make([]float64, r*c)
@@ -38,37 +38,40 @@ func (net *Network) Backprop(x Input) (biasesByLayer, weightsByLayer []mat.Matri
 		biasesByLayer = append(biasesByLayer, biasesLayer)
 	}
 	for _, w := range net.weights {
-		weightsLayer := mat.DenseCopyOf(w)
-		weightsLayer.Reset()
+		r, c := w.Dims()
+		data := make([]float64, r*c)
+		weightsLayer := mat.NewDense(r, c, data)
 		weightsByLayer = append(weightsByLayer, weightsLayer)
 	}
 	// Feedforward
 	activations := []mat.Matrix{x.ToVector().T()}
 	zs := []mat.Matrix{}
-	output := activations[0]
+	activatn := activations[0]
 	for i := 0; i < net.NumLayers()-1; i++ {
-		z := matrix.Add(matrix.Dot(net.weights[i], output.T()).T(), net.biases[i])
+		z := matrix.Add(matrix.Dot(net.weights[i], activatn.T()).T(), net.biases[i])
 		zs = append(zs, z)
-		output = matrix.Apply(activation.Sigmoid, z)
-		activations = append(activations, output)
+		activatn = matrix.Apply(activation.Sigmoid, z)
+		activations = append(activations, activatn)
 	}
 	// Backward pass
-	delta := matrix.Multiply(net.CostDerivative(activations[len(activations)-1], x.Label.Vector).T(), matrix.Apply(activation.SigmoidPrime, zs[len(zs)-1]))
+	delta := matrix.Multiply(net.CostDerivative(activations[len(activations)-1], x.Label.Vector), matrix.Apply(activation.SigmoidPrime, zs[len(zs)-1]))
 	biasesByLayer[len(biasesByLayer)-1] = delta
-	weightsByLayer[len(weightsByLayer)-1] = matrix.Dot(delta, activations[len(activations)-2].T())
-	for l := range utils.XRange(2, net.NumLayers(), 1) {
-		z := zs[len(zs)-l]
-		sp := matrix.Apply(activation.Sigmoid, z)
-		delta = matrix.Multiply(matrix.Dot(net.weights[len(net.weights)-l+1], delta), sp)
-		biasesByLayer[len(biasesByLayer)-l] = delta
-		weightsByLayer[len(weightsByLayer)-l] = matrix.Dot(delta, activations[len(activations)-l-1].T())
+	weightsByLayer[len(weightsByLayer)-1] = matrix.Dot(delta.T(), activations[len(activations)-2])
+	if net.NumLayers() > 2 {
+		for l := range utils.XRange(2, net.NumLayers()-1, 1) {
+			z := zs[len(zs)-l]
+			sp := matrix.Apply(activation.Sigmoid, z)
+			delta = matrix.Multiply(matrix.Dot(delta, net.weights[len(net.weights)-l+1]), sp)
+			biasesByLayer[len(biasesByLayer)-l] = delta
+			weightsByLayer[len(weightsByLayer)-l] = matrix.Dot(delta.T(), activations[len(activations)-l-1])
+		}
 	}
 	return
 }
 
 // CostDerivative returns the vector of partial derivatives `𝛿C_x / 𝛿a` for the output activations.
-func (net *Network) CostDerivative(outputActivations mat.Matrix, y mat.Vector) mat.Vector {
-	return matrix.Substract(outputActivations, y.T()).ColView(0)
+func (net *Network) CostDerivative(outputActivations mat.Matrix, y mat.Vector) mat.Matrix {
+	return matrix.Subtract(outputActivations, y.T())
 }
 
 // Evaluate returns the number of test inputs for which the neural network outputs the correct result.
@@ -121,7 +124,7 @@ func (net *Network) SGD(training Dataset, epochs int, miniBatchSize int, eta flo
 	for j := 0; j < epochs; j++ {
 		training.Shuffle()
 		var miniBatches []Dataset
-		for k := range utils.XRange(0, n, miniBatchSize) {
+		for k := range utils.XRange(0, n-miniBatchSize, miniBatchSize) {
 			miniBatch := training[k : k+miniBatchSize]
 			miniBatches = append(miniBatches, miniBatch)
 		}
@@ -129,9 +132,9 @@ func (net *Network) SGD(training Dataset, epochs int, miniBatchSize int, eta flo
 			net.UpdateMiniBatch(miniBatch, eta)
 		}
 		if len(test) > 0 {
-			fmt.Printf("Epoch %d: %d / %d\n", j, net.Evaluate(test[0]), nTest)
+			fmt.Printf("epoch %d: %d / %d\n", j+1, net.Evaluate(test[0]), nTest)
 		} else {
-			fmt.Printf("Epoch %d complete\n", j)
+			fmt.Printf("epoch %d complete\n", j+1)
 		}
 	}
 }
@@ -140,7 +143,35 @@ func (net *Network) SGD(training Dataset, epochs int, miniBatchSize int, eta flo
 // using backpropagation to a single mini batch.
 // The 'miniBatch' is a list of `Inputs`, and 'eta' is the learning rate.
 func (net *Network) UpdateMiniBatch(miniBatch Dataset, eta float64) {
-	// TODO ######################
+	var biasesByLayer []mat.Matrix
+	for _, b := range net.biases {
+		r, c := b.Dims()
+		data := make([]float64, r*c)
+		biasesLayer := mat.NewDense(r, c, data)
+		biasesByLayer = append(biasesByLayer, biasesLayer)
+	}
+	var weightsByLayer []mat.Matrix
+	for _, w := range net.weights {
+		r, c := w.Dims()
+		data := make([]float64, r*c)
+		weightsLayer := mat.NewDense(r, c, data)
+		weightsByLayer = append(weightsByLayer, weightsLayer)
+	}
+	for _, input := range miniBatch {
+		deltaBiasesByLayer, deltaWeightsByLayer := net.Backprop(input)
+		for i, biases := range biasesByLayer {
+			biasesByLayer[i] = matrix.Add(biases, deltaBiasesByLayer[i])
+		}
+		for i, weights := range weightsByLayer {
+			weightsByLayer[i] = matrix.Add(weights, deltaWeightsByLayer[i])
+		}
+	}
+	for i, biases := range net.biases {
+		net.biases[i] = matrix.Subtract(biases, matrix.Scale(eta/float64(len(miniBatch)), biasesByLayer[i]))
+	}
+	for i, weights := range net.weights {
+		net.weights[i] = matrix.Subtract(weights, matrix.Scale(eta/float64(len(miniBatch)), weightsByLayer[i]))
+	}
 }
 
 // NumLayers is utility method returning the number of layers in the network.

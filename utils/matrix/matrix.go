@@ -56,8 +56,16 @@ func Random(r, c int, v float64) mat.Matrix {
 	return mat.NewDense(r, c, data)
 }
 
-// Substract computes the substraction of two matrices.
-func Substract(m, n mat.Matrix) *mat.Dense {
+// Scale multiplies a matrix by a scalar.
+func Scale(s float64, m mat.Matrix) mat.Matrix {
+	r, c := m.Dims()
+	o := mat.NewDense(r, c, nil)
+	o.Scale(s, m)
+	return o
+}
+
+// Subtract computes the substraction of two matrices.
+func Subtract(m, n mat.Matrix) *mat.Dense {
 	r, c := m.Dims()
 	o := mat.NewDense(r, c, nil)
 	o.Sub(m, n)
