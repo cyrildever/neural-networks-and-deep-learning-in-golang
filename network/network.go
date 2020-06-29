@@ -7,6 +7,7 @@ import (
 	"neuraldeep/activation"
 	"neuraldeep/utils"
 	"neuraldeep/utils/matrix"
+	"os"
 
 	"gonum.org/v1/gonum/mat"
 )
@@ -182,6 +183,37 @@ func (net *Network) NumLayers() int {
 // OutputSize returns the size of the last layer.
 func (net *Network) OutputSize() int {
 	return net.Sizes[net.NumLayers()-1]
+}
+
+// Save records the network to a './data/saved/network/' folder
+func (net *Network) Save() error {
+	for i, biases := range net.biases {
+		filepath := fmt.Sprintf("./data/saved/network/biases%d.layer", i)
+		fmt.Println(filepath) // ####
+		if f, err := os.Create(filepath); err == nil {
+			if b, ok := biases.(*mat.Dense); ok {
+				_, e := b.MarshalBinaryTo(f)
+				if e != nil {
+					fmt.Printf("error saving biases layer %d\n", i)
+					return e
+				}
+			}
+			f.Close()
+		}
+	}
+	for i, weights := range net.weights {
+		filepath := fmt.Sprintf("./data/saved/network/weights%d.layer", i)
+		if f, err := os.Create(filepath); err == nil {
+			if b, ok := weights.(*mat.Dense); ok {
+				_, e := b.MarshalBinaryTo(f)
+				if e != nil {
+					fmt.Printf("error saving weights layer %d\n", i)
+					return e
+				}
+			}
+		}
+	}
+	return nil
 }
 
 //--- FUNCTIONS

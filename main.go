@@ -13,10 +13,10 @@ import (
 // Usage:
 //
 // For one line of data:
-// `$ ./neuraldeep --op predict --layers 6,50,20,3 --data "1,2.4,3,4,5,-6" --label 3`
+// `$ ./neuraldeep --op=predict --layers=6,50,20,3 --data="1,2.4,3,4,5,-6" --label=3`
 //
 // To use the MNIST dataset:
-// `$ ./neuraldeep --op train --layers 784,30,10 --data training --useMNIST true`
+// `$ ./neuraldeep --op=train --layers=784,30,10 --data=training --useMNIST=true --epochs=30 --size=10 --eta=3.0 --load=false`
 func main() {
 	// Parse command line arguments
 	operation := flag.String("op", "", "operation to proceed: predict | test | train")
@@ -25,23 +25,41 @@ func main() {
 	labelStr := flag.String("label", "", "the label/target of the passed value as a float64 number")
 	src := flag.String("src", "", "the source file to use as input data")
 	useMNIST := flag.Bool("useMNIST", false, "set to true to use MNIST dataset (the layers flag should start with 784 and end with 10)")
+	epochs := flag.Int("epochs", 1, "number of epochs")
+	miniBatchSize := flag.Int("size", 10, "mini-batch size")
+	eta := flag.Float64("eta", 0.1, "learning rate")
+	load := flag.Bool("load", false, "set to `true` if you want to load an existing network")
+	pathToExisting := flag.String("path", "./data/saved/network.model", "path to the existing file")
+
 	flag.Parse()
 
+	fmt.Printf("Command to execute: $ ./neuraldeep --op=%s --layers=%s --data=%s --label=%s --src=%s --useMNIST=%t --epochs=%d --size=%d --eta=%f --load=%t\n===\n",
+		*operation, *layersStr, *dataStr, *labelStr, *src, *useMNIST, *epochs, *miniBatchSize, *eta, *load)
+	t0 := time.Now()
+
 	// Initialize the network
-	layers := strings.Split(*layersStr, ",")
-	var sizes []int
-	for _, layer := range layers {
-		size, err := strconv.Atoi(layer)
+	var net *network.Network
+	var lastLayerSize int
+	if *load {
+		/// TODO ####
+		fmt.Println("loading from", *pathToExisting)
+	} else {
+		layers := strings.Split(*layersStr, ",")
+		var sizes []int
+		for _, layer := range layers {
+			size, err := strconv.Atoi(layer)
+			if err != nil {
+				panic(err)
+			}
+			sizes = append(sizes, size)
+		}
+		n, err := network.Init(sizes)
 		if err != nil {
 			panic(err)
 		}
-		sizes = append(sizes, size)
+		net = n
+		lastLayerSize = sizes[len(sizes)-1]
 	}
-	net, err := network.Init(sizes)
-	if err != nil {
-		panic(err)
-	}
-	lastLayerSize := sizes[len(sizes)-1]
 	fmt.Printf("network ready [nbOfLayers=%d, outputSize=%d]\n", net.NumLayers(), lastLayerSize)
 
 	// Get the input data
@@ -89,13 +107,13 @@ func main() {
 	}
 
 	// Process the operation
-	t0 := time.Now()
+	t1 := time.Now()
 	switch *operation {
 	case "predict":
 		fmt.Println("predicting...")
 		if *useMNIST {
 			// TODO ####
-			elapsed := time.Since(t0)
+			elapsed := time.Since(t1)
 			fmt.Printf("elapsed: %d ms\n", elapsed.Milliseconds())
 		} else {
 			a := dataset[0].ToVector()
@@ -104,7 +122,7 @@ func main() {
 			if c != lastLayerSize {
 				panic(errors.New("size mismatch in result"))
 			}
-			elapsed := time.Since(t0)
+			elapsed := time.Since(t1)
 			fmt.Printf("elapsed: %d ms\n", elapsed.Milliseconds())
 			fmt.Printf("target: %f\n", dataset[0].Label)
 			for i := 0; i < c; i++ {
@@ -114,14 +132,20 @@ func main() {
 	case "test":
 		fmt.Println("testing...")
 		sum := net.Evaluate(dataset)
-		elapsed := time.Since(t0)
+		elapsed := time.Since(t1)
 		fmt.Printf("elapsed: %d ms\n", elapsed.Milliseconds())
 		fmt.Printf("nbOfCorrectResults: %d\n", sum)
 	case "train":
 		fmt.Println("training...")
-		// TODO ####
-		elapsed := time.Since(t0)
+		net.SGD(dataset, *epochs, *miniBatchSize, *eta)
+		elapsed := time.Since(t1)
 		fmt.Printf("elapsed: %d ms\n", elapsed.Milliseconds())
+		fmt.Println("saving to ./data/saved/network/")
+		if err := net.Save(); err != nil {
+			panic(err)
+		}
+		elapsed = time.Since(t0)
+		fmt.Printf("terminated in %f s\n", elapsed.Seconds())
 	default:
 		fmt.Println("invalid operation: ", *operation)
 	}

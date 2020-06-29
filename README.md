@@ -17,19 +17,25 @@ $ go build
 ### Usage
 
 ```console
-$ ./neuraldeep --layers 6,50,20,3 --data "1,2.4,3,4,5,-6" --label 3
+$ ./neuraldeep --op=train --layers=784,30,10 --data=training --useMNIST=true --epochs=30 --size=10 --eta=3.0 --load=false
 ```
 
 ```
 Usage of ./neuraldeep:
   -data string
         a single data set to feed the first layer (a comma-separated list of float64), or the name of the MNIST set (test | training | validation)
+  -epochs int
+        number of epochs (default 1)
+  -eta float
+        learning rate (default 0.1)
   -label string
         the label/target of the passed value as a float64 number
   -layers string
         comma-separated list of number of neurons per layer (the first one being the size of the input layer)
   -op string
         operation to proceed: predict | test | train
+  -size int
+        mini-batch size (default 10)
   -src string
         the source file to use as input data
   -useMNIST
