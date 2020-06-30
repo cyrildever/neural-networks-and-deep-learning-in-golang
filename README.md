@@ -17,7 +17,7 @@ $ go build
 ### Usage
 
 ```console
-$ ./neuraldeep --op=train --layers=784,30,10 --data=training --useMNIST=true --epochs=30 --size=10 --eta=3.0 --load=false
+$ ./neuraldeep -op=train -layers=784,30,10 -data=training -useMNIST=true -epochs=30 -size=10 -eta=3.0 -load=false
 ```
 
 ```
@@ -28,12 +28,18 @@ Usage of ./neuraldeep:
         number of epochs (default 1)
   -eta float
         learning rate (default 0.1)
+  -eval true
+        set to true to add evaluation at each training epoch
   -label string
         the label/target of the passed value as a float64 number
   -layers string
         comma-separated list of number of neurons per layer (the first one being the size of the input layer)
+  -load true
+        set to true if you want to load an existing network
   -op string
         operation to proceed: predict | test | train
+  -path string
+        path to the existing file (default "./data/saved/network/")
   -size int
         mini-batch size (default 10)
   -src string

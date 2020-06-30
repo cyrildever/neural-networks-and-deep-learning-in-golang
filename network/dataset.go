@@ -50,9 +50,9 @@ func ToLabel(value float64, size int) *Label {
 	data := make([]float64, size)
 	for i := range utils.XRange(0, size-1, 1) {
 		if int(math.Round(value)) == i {
-			data[i] = .99
+			data[i] = 1.0
 		} else {
-			data[i] = .01
+			data[i] = 0.0
 		}
 	}
 	return &Label{

@@ -82,8 +82,11 @@ func (net *Network) Evaluate(test Dataset) (sum int) {
 		testData := input.ToVector()
 		output := net.FeedForward(testData)
 		max := mat.Max(output)
-		r, _ := output.Dims()
-		col := mat.Col(nil, r, output)
+		_, c := output.Dims()
+		col := make([]float64, c)
+		for i := 0; i < c; i++ {
+			col[i] = output.At(0, i)
+		}
 		var result int
 		for idx, val := range col {
 			if val == max {
@@ -205,8 +208,8 @@ func (net *Network) Save() error {
 	for i, weights := range net.weights {
 		filepath := fmt.Sprintf("./data/saved/network/weights%d.layer", i)
 		if f, err := os.Create(filepath); err == nil {
-			if b, ok := weights.(*mat.Dense); ok {
-				_, e := b.MarshalBinaryTo(f)
+			if w, ok := weights.(*mat.Dense); ok {
+				_, e := w.MarshalBinaryTo(f)
 				if e != nil {
 					fmt.Printf("error saving weights layer %d\n", i)
 					return e

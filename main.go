@@ -13,11 +13,11 @@ import (
 // Usage:
 //
 // For one line of data:
-// `$ ./neuraldeep --op=predict --layers=6,50,20,3 --data="1,2.4,3,4,5,-6" --label=3`
+// `$ ./neuraldeep -op=predict -layers=6,50,20,3 -data="1,2.4,3,4,5,-6" -label=3`
 //
 // To use the MNIST dataset:
-// `$ ./neuraldeep --op=train --layers=784,30,10 --data=training --useMNIST=true --epochs=30 --size=10 --eta=3.0 --load=false`
-// `$ ./neuraldeep --op=test --layers=784,30,10 --data=test --useMNIST=true --load=true`
+// `$ ./neuraldeep -op=train -layers=784,30,10 -data=training -useMNIST=true -epochs=30 -size=10 -eta=3.0 -load=false`
+// `$ ./neuraldeep -op=test -layers=784,30,10 -data=test -useMNIST=true -load=true`
 func main() {
 	// Parse command line arguments
 	operation := flag.String("op", "", "operation to proceed: predict | test | train")
@@ -31,11 +31,12 @@ func main() {
 	eta := flag.Float64("eta", 0.1, "learning rate")
 	load := flag.Bool("load", false, "set to `true` if you want to load an existing network")
 	pathToExisting := flag.String("path", "./data/saved/network/", "path to the existing file")
+	evaluate := flag.Bool("eval", false, "set to `true` to add evaluation at each training epoch")
 
 	flag.Parse()
 
-	fmt.Printf("Command to execute: $ ./neuraldeep --op=%s --layers=%s --data=%s --label=%s --src=%s --useMNIST=%t --epochs=%d --size=%d --eta=%f --load=%t\n===\n",
-		*operation, *layersStr, *dataStr, *labelStr, *src, *useMNIST, *epochs, *miniBatchSize, *eta, *load)
+	fmt.Printf("command to execute: $ ./neuraldeep -op=%s -layers=%s -data=%s -label=%s -src=%s -useMNIST=%t -epochs=%d -size=%d -eta=%f -load=%t -eval=%t\n===\n",
+		*operation, *layersStr, *dataStr, *labelStr, *src, *useMNIST, *epochs, *miniBatchSize, *eta, *load, *evaluate)
 	t0 := time.Now()
 
 	// Initialize the network
@@ -71,6 +72,7 @@ func main() {
 
 	// Get the input data
 	dataset := network.Dataset{}
+	evalset := network.Dataset{}
 	if *useMNIST {
 		training, validation, test, err := network.LoadData()
 		if err != nil {
@@ -81,6 +83,7 @@ func main() {
 			dataset = test
 		case "training":
 			dataset = training
+			evalset = test
 		case "validation":
 			dataset = validation
 		}
@@ -144,7 +147,11 @@ func main() {
 		fmt.Printf("nbOfCorrectResults: %d\n", sum)
 	case "train":
 		fmt.Println("training...")
-		net.SGD(dataset, *epochs, *miniBatchSize, *eta)
+		if *evaluate {
+			net.SGD(dataset, *epochs, *miniBatchSize, *eta, evalset)
+		} else {
+			net.SGD(dataset, *epochs, *miniBatchSize, *eta)
+		}
 		elapsed := time.Since(t1)
 		fmt.Printf("elapsed: %d ms\n", elapsed.Milliseconds())
 		fmt.Println("saving to ./data/saved/network/")
