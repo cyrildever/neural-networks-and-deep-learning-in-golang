@@ -17,7 +17,7 @@ $ go build
 ### Usage
 
 ```console
-$ ./neuraldeep -op=train -layers=784,30,10 -data=training -useMNIST=true -epochs=30 -size=10 -eta=3.0 -load=false
+$ ./neuraldeep -n=1 -op=train -layers=784,30,10 -data=training -useMNIST=true -epochs=30 -size=10 -eta=3.0 -load=false
 ```
 
 ```
@@ -36,6 +36,8 @@ Usage of ./neuraldeep:
         comma-separated list of number of neurons per layer (the first one being the size of the input layer)
   -load true
         set to true if you want to load an existing network
+  -n string
+        the network implementation to use: 1 | 2 | 3 (default "1")
   -op string
         operation to proceed: predict | test | train
   -path string
