@@ -20,7 +20,7 @@ import (
 
 // Network defines the neural network structure by instantiating it with an array of sizes,
 // ie. the number of neurons per layer
-type Network struct {
+type Network1 struct {
 	Sizes     []int
 	numLayers int
 	weights   []mat.Matrix
@@ -31,7 +31,7 @@ type Network struct {
 
 // Backprop returns a tuple representing the gradient of the cost function `C_x`.
 // 'biasesByLayer' and 'weightsByLayer' are layer-by-layer lists of matrices, similar to `Network.biases` and `Network.weights`.
-func (net *Network) Backprop(x *Input) (biasesByLayer, weightsByLayer []mat.Matrix) {
+func (net *Network1) Backprop(x *Input) (biasesByLayer, weightsByLayer []mat.Matrix) {
 	for _, b := range net.biases {
 		r, c := b.Dims()
 		data := make([]float64, r*c)
@@ -71,13 +71,13 @@ func (net *Network) Backprop(x *Input) (biasesByLayer, weightsByLayer []mat.Matr
 }
 
 // CostDerivative returns the vector of partial derivatives `𝛿C_x / 𝛿a` for the output activations.
-func (net *Network) CostDerivative(outputActivations mat.Matrix, y mat.Vector) mat.Matrix {
+func (net *Network1) CostDerivative(outputActivations mat.Matrix, y mat.Vector) mat.Matrix {
 	return matrix.Subtract(outputActivations, y.T())
 }
 
 // Evaluate returns the number of test inputs for which the neural network outputs the correct result.
 // Note that the neural network's output is assumed to be the index of whichever neuron in the final layer has the highest activation.
-func (net *Network) Evaluate(test Dataset) (sum int) {
+func (net *Network1) Evaluate(test Dataset) (sum int) {
 	for _, input := range test {
 		testData := input.ToVector()
 		output := net.FeedForward(testData)
@@ -102,7 +102,7 @@ func (net *Network) Evaluate(test Dataset) (sum int) {
 }
 
 // FeedForward returns the output of the network if `a` is input.
-func (net *Network) FeedForward(a mat.Vector) (output mat.Matrix) {
+func (net *Network1) FeedForward(a mat.Vector) (output mat.Matrix) {
 	output = a.T()
 	for i := 0; i < net.NumLayers()-1; i++ {
 		// sigmoid(w·a + b)
@@ -116,7 +116,7 @@ func (net *Network) FeedForward(a mat.Vector) (output mat.Matrix) {
 // The other non-optional parameters are self-explanatory.
 // If 'test' dataset is provided then the network will be evaluated against the test data after each epoch,
 // and partial progress printed out. This is useful for tracking progress, but slows things down substantially.
-func (net *Network) SGD(training Dataset, epochs int, miniBatchSize int, eta float64, test ...Dataset) {
+func (net *Network1) SGD(training Dataset, epochs int, miniBatchSize int, eta float64, test ...Dataset) {
 	var (
 		nTest int
 		n     int
@@ -146,7 +146,7 @@ func (net *Network) SGD(training Dataset, epochs int, miniBatchSize int, eta flo
 // UpdateMiniBatch updates the network's weights and biases by applying gradient descent
 // using backpropagation to a single mini batch.
 // The 'miniBatch' is a list of `Inputs`, and 'eta' is the learning rate.
-func (net *Network) UpdateMiniBatch(miniBatch Dataset, eta float64) {
+func (net *Network1) UpdateMiniBatch(miniBatch Dataset, eta float64) {
 	var biasesByLayer []mat.Matrix
 	for _, b := range net.biases {
 		r, c := b.Dims()
@@ -181,17 +181,17 @@ func (net *Network) UpdateMiniBatch(miniBatch Dataset, eta float64) {
 //---
 
 // NumLayers is utility method returning the number of layers in the network.
-func (net *Network) NumLayers() int {
+func (net *Network1) NumLayers() int {
 	return net.numLayers
 }
 
 // OutputSize returns the size of the last layer.
-func (net *Network) OutputSize() int {
+func (net *Network1) OutputSize() int {
 	return net.Sizes[net.NumLayers()-1]
 }
 
 // Save records the network to a './data/saved/network/' folder
-func (net *Network) Save() error {
+func (net *Network1) Save() error {
 	for i, biases := range net.biases {
 		filepath := fmt.Sprintf("./data/saved/network/biases%d.layer", i)
 		if f, err := os.Create(filepath); err == nil {
@@ -230,7 +230,7 @@ func (net *Network) Save() error {
 // with mean 0, and variance 1. Note that the first layer is assumed to be an input layer, and by
 // convention we won’t set any biases for those neurons, since biases are only ever used in computing
 // the outputs from later layers.
-func Init(sizes []int) (n *Network, err error) {
+func Init(sizes []int) (n *Network1, err error) {
 	if len(sizes) < 2 {
 		err = errors.New("not enough layers")
 		return
@@ -252,7 +252,7 @@ func Init(sizes []int) (n *Network, err error) {
 		weights[i] = matrix.Random(tuple.J, tuple.I, 2)
 	}
 
-	return &Network{
+	return &Network1{
 		Sizes:     sizes,
 		numLayers: len(sizes),
 		weights:   weights,
@@ -261,7 +261,7 @@ func Init(sizes []int) (n *Network, err error) {
 }
 
 // Load populates a network from saved data.
-func Load(to *Network, path string) error {
+func Load(to *Network1, path string) error {
 	i := 0
 	for {
 		filepath := fmt.Sprintf(path+"weights%d.layer", i)
