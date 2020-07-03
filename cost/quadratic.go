@@ -27,3 +27,9 @@ func (this *QuadraticCost) Function() float64 {
 func (this *QuadraticCost) Delta(z mat.Matrix) mat.Matrix {
 	return matrix.Multiply(matrix.Subtract(this.A, this.Y.T()), matrix.Apply(activation.SigmoidPrime, z))
 }
+
+// Init ...
+func (this *QuadraticCost) Init(a mat.Matrix, y mat.Vector) {
+	this.A = a
+	this.Y = y
+}

@@ -24,6 +24,48 @@ type Network2 struct {
 
 //--- METHODS
 
+// Backprop returns a tuple representing the gradient of the cost function `C_x`.
+// 'biasesByLayer' and 'weightsByLayer' are layer-by-layer lists of matrices, similar to `Network.biases` and `Network.weights`.
+func (net *Network2) Backprop(x *Input) (biasesByLayer, weightsByLayer []mat.Matrix) {
+	for _, b := range net.biases {
+		r, c := b.Dims()
+		data := make([]float64, r*c)
+		biasesLayer := mat.NewDense(r, c, data)
+		biasesByLayer = append(biasesByLayer, biasesLayer)
+	}
+	for _, w := range net.weights {
+		r, c := w.Dims()
+		data := make([]float64, r*c)
+		weightsLayer := mat.NewDense(r, c, data)
+		weightsByLayer = append(weightsByLayer, weightsLayer)
+	}
+	// Feedforward
+	activations := []mat.Matrix{x.ToVector().T()}
+	zs := []mat.Matrix{}
+	activatn := activations[0]
+	for i := 0; i < net.NumLayers()-1; i++ {
+		z := matrix.Add(matrix.Dot(net.weights[i], activatn.T()).T(), net.biases[i])
+		zs = append(zs, z)
+		activatn = matrix.Apply(activation.Sigmoid, z)
+		activations = append(activations, activatn)
+	}
+	// Backward pass
+	net.Cost.Init(activations[len(activations)-1], x.Label.Vector)
+	delta := net.Cost.Delta(zs[len(zs)-1])
+	biasesByLayer[len(biasesByLayer)-1] = delta
+	weightsByLayer[len(weightsByLayer)-1] = matrix.Dot(delta.T(), activations[len(activations)-2])
+	if net.NumLayers() > 2 {
+		for l := range utils.XRange(2, net.NumLayers()-1, 1) {
+			z := zs[len(zs)-l]
+			sp := matrix.Apply(activation.Sigmoid, z)
+			delta = matrix.Multiply(matrix.Dot(delta, net.weights[len(net.weights)-l+1]), sp)
+			biasesByLayer[len(biasesByLayer)-l] = delta
+			weightsByLayer[len(weightsByLayer)-l] = matrix.Dot(delta.T(), activations[len(activations)-l-1])
+		}
+	}
+	return
+}
+
 // FeedForward returns the output of the network if `a` is input.
 func (net *Network2) FeedForward(a mat.Vector) (output mat.Matrix) {
 	output = a.T()
