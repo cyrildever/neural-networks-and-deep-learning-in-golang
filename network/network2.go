@@ -3,6 +3,7 @@ package network
 import (
 	"errors"
 	"math"
+	"neuraldeep/activation"
 	"neuraldeep/cost"
 	"neuraldeep/utils"
 	"neuraldeep/utils/matrix"
@@ -22,6 +23,28 @@ type Network2 struct {
 }
 
 //--- METHODS
+
+// FeedForward returns the output of the network if `a` is input.
+func (net *Network2) FeedForward(a mat.Vector) (output mat.Matrix) {
+	output = a.T()
+	for i := 0; i < net.NumLayers()-1; i++ {
+		// sigmoid(w·a + b)
+		output = matrix.Apply(activation.Sigmoid, matrix.Add(matrix.Dot(net.weights[i], output.T()).T(), net.biases[i]))
+	}
+	return output
+}
+
+//---
+
+// NumLayers is utility method returning the number of layers in the network.
+func (net *Network2) NumLayers() int {
+	return net.numLayers
+}
+
+// OutputSize returns the size of the last layer.
+func (net *Network2) OutputSize() int {
+	return net.Sizes[net.NumLayers()-1]
+}
 
 //--- FUNCTIONS
 
