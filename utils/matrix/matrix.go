@@ -34,6 +34,13 @@ func Dot(m, n mat.Matrix) mat.Matrix {
 	return o
 }
 
+// Log applies the natural logarithm element-wise on the passed Matrix.
+func Log(m mat.Matrix) mat.Matrix {
+	return Apply(func(i, j int, v float64) float64 {
+		return math.Log(v)
+	}, m)
+}
+
 // Multiply multiplies two matrices together.
 func Multiply(m, n mat.Matrix) mat.Matrix {
 	r, c := m.Dims()
