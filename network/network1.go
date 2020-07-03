@@ -18,7 +18,7 @@ import (
 
 //--- TYPES
 
-// Network defines the neural network structure by instantiating it with an array of sizes,
+// Network1 defines the neural network structure by instantiating it with an array of sizes,
 // ie. the number of neurons per layer
 type Network1 struct {
 	Sizes     []int
