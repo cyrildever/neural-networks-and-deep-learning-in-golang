@@ -76,6 +76,42 @@ func (net *Network2) FeedForward(a mat.Vector) (output mat.Matrix) {
 	return output
 }
 
+// UpdateMiniBatch updates the network's weights and biases by applying gradient descent
+// using backpropagation to a single mini batch.
+// The 'miniBatch' is a list of `Inputs`, 'eta' is the learning rate, 'lambda' is the
+// regularization parameter, and 'n' is the total size of the training data set.
+func (net *Network2) UpdateMiniBatch(miniBatch Dataset, eta, lambda float64, n int) {
+	var biasesByLayer []mat.Matrix
+	for _, b := range net.biases {
+		r, c := b.Dims()
+		data := make([]float64, r*c)
+		biasesLayer := mat.NewDense(r, c, data)
+		biasesByLayer = append(biasesByLayer, biasesLayer)
+	}
+	var weightsByLayer []mat.Matrix
+	for _, w := range net.weights {
+		r, c := w.Dims()
+		data := make([]float64, r*c)
+		weightsLayer := mat.NewDense(r, c, data)
+		weightsByLayer = append(weightsByLayer, weightsLayer)
+	}
+	for _, input := range miniBatch {
+		deltaBiasesByLayer, deltaWeightsByLayer := net.Backprop(input)
+		for i, biases := range biasesByLayer {
+			biasesByLayer[i] = matrix.Add(biases, deltaBiasesByLayer[i])
+		}
+		for i, weights := range weightsByLayer {
+			weightsByLayer[i] = matrix.Add(weights, deltaWeightsByLayer[i])
+		}
+	}
+	for i, biases := range net.biases {
+		net.biases[i] = matrix.Subtract(biases, matrix.Scale(eta/float64(len(miniBatch)), biasesByLayer[i]))
+	}
+	for i, weights := range net.weights {
+		net.weights[i] = matrix.Subtract(matrix.Scale(1-eta*(lambda/float64(n)), weights), matrix.Scale(eta/float64(len(miniBatch)), weightsByLayer[i]))
+	}
+}
+
 //---
 
 // NumLayers is utility method returning the number of layers in the network.
