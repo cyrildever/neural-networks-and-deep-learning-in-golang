@@ -131,10 +131,17 @@ func (net *Network2) OutputSize() int {
 // For example, if the list was [2, 3, 1] then it would be a three-layer network, with the
 // first layer containing 2 neurons, the second layer 3 neurons, and the third layer 1 neuron.
 // The biases and weights for the network are initialized randomly, using DefaultWeightInitializer().
-func Initial(sizes []int, fn cost.Cost) (n *Network2, err error) {
+func Initial(sizes []int, fn ...cost.Cost) (n *Network2, err error) {
 	if len(sizes) < 2 {
 		err = errors.New("not enough layers")
 		return
+	}
+
+	var costFunction cost.Cost
+	if len(fn) != 1 {
+		costFunction = cost.CrossEntropyCost{}
+	} else {
+		costFunction = fn[0]
 	}
 
 	biases, weights, err := DefaultWeightInitializer(sizes)
@@ -144,7 +151,7 @@ func Initial(sizes []int, fn cost.Cost) (n *Network2, err error) {
 
 	return &Network2{
 		Sizes:     sizes,
-		Cost:      fn,
+		Cost:      costFunction,
 		numLayers: len(sizes),
 		weights:   weights,
 		biases:    biases,
