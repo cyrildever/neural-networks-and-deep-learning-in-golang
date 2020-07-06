@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"neuraldeep/cost"
 	"neuraldeep/network"
 	"strconv"
 	"strings"
@@ -19,6 +20,8 @@ import (
 // `$ ./neuraldeep -n=1 -op=train -layers=784,300,10 -data=training -useMNIST=true -epochs=30 -size=10 -eta=3.0 -load=false -eval=true`
 // `$ ./neuraldeep -n=1 -op=test -layers=784,300,10 -data=test -useMNIST=true -load=true`
 // `& ./neuraldeep -n=1 -op=predict -layers=784,300,10 -label=5 -data="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,18,18,18,126,136,175,26,166,255,247,127,0,0,0,0,0,0,0,0,0,0,0,0,30,36,94,154,170,253,253,253,253,253,225,172,253,242,195,64,0,0,0,0,0,0,0,0,0,0,0,49,238,253,253,253,253,253,253,253,253,251,93,82,82,56,39,0,0,0,0,0,0,0,0,0,0,0,0,18,219,253,253,253,253,253,198,182,247,241,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,80,156,107,253,253,205,11,0,43,154,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,1,154,253,90,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,139,253,190,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,190,253,70,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,241,225,160,108,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,81,240,253,253,119,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,45,186,253,253,150,27,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,93,252,253,187,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,249,253,249,64,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,46,130,183,253,253,207,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,148,229,253,253,253,250,182,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,24,114,221,253,253,253,253,201,78,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,66,213,253,253,253,253,198,81,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,171,219,253,253,253,253,195,80,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,55,172,226,253,253,253,253,244,133,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,136,253,253,253,212,135,132,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" -load=true`
+//
+// `$ ./neuraldeep -n=2 -op=train -cost=crossEntropy -layers=784,300,10 -data=training -useMNIST=true -epochs=30 -size=10 -eta=3.0 -load=false`
 func main() {
 	// Parse command line arguments
 	n := flag.String("n", "1", "the network implementation to use: 1 | 2 | 3")
@@ -34,11 +37,12 @@ func main() {
 	load := flag.Bool("load", false, "set to `true` if you want to load an existing network")
 	pathToExisting := flag.String("path", "./data/saved/network/", "path to the existing file")
 	evaluate := flag.Bool("eval", false, "set to `true` to add evaluation at each training epoch")
+	costFunction := flag.String("cost", "crossEntropy", "cost function: crossEntropy | quadratic")
 
 	flag.Parse()
 
-	fmt.Printf("command to execute: $ ./neuraldeep -n=%s -op=%s -layers=%s -data=%s -label=%s -src=%s -useMNIST=%t -epochs=%d -size=%d -eta=%f -load=%t -eval=%t\n===\n",
-		*n, *operation, *layersStr, *dataStr, *labelStr, *src, *useMNIST, *epochs, *miniBatchSize, *eta, *load, *evaluate)
+	fmt.Printf("command to execute: $ ./neuraldeep -n=%s -op=%s -layers=%s -data=%s -label=%s -src=%s -useMNIST=%t -epochs=%d -size=%d -eta=%f -load=%t -eval=%t -cost=%s\n===\n",
+		*n, *operation, *layersStr, *dataStr, *labelStr, *src, *useMNIST, *epochs, *miniBatchSize, *eta, *load, *evaluate, *costFunction)
 	t0 := time.Now()
 
 	// Choose the implementation
@@ -167,6 +171,46 @@ func main() {
 		default:
 			fmt.Println("invalid operation: ", *operation)
 		}
+	} else if *n == "2" {
+		// Initialize the network
+		var net *network.Network2
+		layers := strings.Split(*layersStr, ",")
+		var sizes []int
+		for _, layer := range layers {
+			size, err := strconv.Atoi(layer)
+			if err != nil {
+				panic(err)
+			}
+			sizes = append(sizes, size)
+		}
+		var cf cost.Cost
+		switch *costFunction {
+		case "crossEntropy":
+			cf = &cost.CrossEntropyCost{}
+		case "quadratic":
+			cf = &cost.QuadraticCost{}
+		default:
+			panic("invalid cost function")
+		}
+		if *load {
+			fmt.Println("loading from", *pathToExisting)
+			n, err := network.Initial(sizes, cf)
+			if err != nil {
+				panic(err)
+			}
+			if err := n.Load(*pathToExisting); err != nil {
+				panic(err)
+			}
+			net = n
+		} else {
+			n, err := network.Initial(sizes, cf)
+			if err != nil {
+				panic(err)
+			}
+			net = n
+		}
+		lastLayerSize := sizes[len(sizes)-1]
+		fmt.Printf("network %s ready [nbOfLayers=%d, outputSize=%d]\n", *n, net.NumLayers(), lastLayerSize)
 	} else {
 		fmt.Println("not implemented yet")
 	}

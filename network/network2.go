@@ -76,6 +76,12 @@ func (net *Network2) FeedForward(a mat.Vector) (output mat.Matrix) {
 	return output
 }
 
+// Load loads a neural network from the file 'path' into the current Network2 instance.
+func (net *Network2) Load(path string) error {
+	// TODO ######
+	return nil
+}
+
 // UpdateMiniBatch updates the network's weights and biases by applying gradient descent
 // using backpropagation to a single mini batch.
 // The 'miniBatch' is a list of `Inputs`, 'eta' is the learning rate, 'lambda' is the
