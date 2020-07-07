@@ -8,12 +8,15 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
+const QUADRATIC_COST = "Quadratic"
+
 //--- TYPES
 
 // QuadraticCost ...
 type QuadraticCost struct {
-	A mat.Matrix
-	Y mat.Vector
+	A    mat.Matrix
+	Y    mat.Vector
+	Name string
 }
 
 //--- METHODS
@@ -32,4 +35,10 @@ func (this QuadraticCost) Delta(z mat.Matrix) mat.Matrix {
 func (this QuadraticCost) Init(a mat.Matrix, y mat.Vector) {
 	this.A = a
 	this.Y = y
+	this.Name = QUADRATIC_COST
+}
+
+// GetName ...
+func (this QuadraticCost) GetName() string {
+	return this.Name
 }

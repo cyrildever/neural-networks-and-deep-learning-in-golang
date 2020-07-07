@@ -9,4 +9,5 @@ type Cost interface {
 	Function() float64
 	Delta(z mat.Matrix) mat.Matrix
 	Init(a mat.Matrix, y mat.Vector)
+	GetName() string
 }

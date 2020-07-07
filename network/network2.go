@@ -1,12 +1,15 @@
 package network
 
 import (
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"math"
 	"neuraldeep/activation"
 	"neuraldeep/cost"
 	"neuraldeep/utils"
 	"neuraldeep/utils/matrix"
+	"os"
 
 	"gonum.org/v1/gonum/mat"
 )
@@ -78,7 +81,88 @@ func (net *Network2) FeedForward(a mat.Vector) (output mat.Matrix) {
 
 // Load loads a neural network from the file 'path' into the current Network2 instance.
 func (net *Network2) Load(path string) error {
-	// TODO ######
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	bytes, err := ioutil.ReadAll(f)
+	if err != nil {
+		return err
+	}
+	var n Network
+	err = json.Unmarshal(bytes, &n)
+	if err != nil {
+		return err
+	}
+	var c cost.Cost
+	switch n.Cost {
+	case cost.CROSS_ENTROPY:
+		c = cost.CrossEntropyCost{}
+	case cost.QUADRATIC_COST:
+		c = cost.QuadraticCost{}
+	default:
+		return errors.New("invalid cost function")
+	}
+	n2, err := Initial(n.Sizes, c)
+	if err != nil {
+		return err
+	}
+	for i, wData := range n.Weights {
+		r, c := n2.weights[i].Dims()
+		mW := mat.NewDense(r, c, wData)
+		n2.weights[i] = mW
+	}
+	for i, bData := range n.Biases {
+		r, c := n2.biases[i].Dims()
+		mB := mat.NewDense(r, c, bData)
+		n2.biases[i] = mB
+	}
+	net.Sizes = n2.Sizes
+	net.Cost = n2.Cost
+	net.numLayers = n2.NumLayers()
+	net.weights = n2.weights
+	net.biases = n2.biases
+	return nil
+}
+
+// Save saves the neural network to the file 'path'.
+func (net *Network2) Save(path string) error {
+	var wList [][]float64
+	for _, weights := range net.weights {
+		var wL []float64
+		r, c := weights.Dims()
+		for i := 0; i < r; i++ {
+			for j := 0; j < c; j++ {
+				wL = append(wL, weights.At(i, j))
+			}
+		}
+		wList = append(wList, wL)
+	}
+	var bList [][]float64
+	for _, biases := range net.biases {
+		var bL []float64
+		r, c := biases.Dims()
+		for i := 0; i < r; i++ {
+			for j := 0; j < c; j++ {
+				bL = append(bL, biases.At(i, j))
+			}
+		}
+		bList = append(bList, bL)
+	}
+	data := Network{
+		Sizes:   net.Sizes,
+		Cost:    net.Cost.GetName(),
+		Weights: wList,
+		Biases:  bList,
+	}
+	jsonNetwork, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(path, jsonNetwork, 0644)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

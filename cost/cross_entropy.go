@@ -6,12 +6,15 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
+const CROSS_ENTROPY = "CrossEntropy"
+
 //--- TYPES
 
 // CrossEntropyCost ...
 type CrossEntropyCost struct {
-	A mat.Matrix
-	Y mat.Vector
+	A    mat.Matrix
+	Y    mat.Vector
+	Name string
 }
 
 //--- METHODS
@@ -32,6 +35,12 @@ func (this CrossEntropyCost) Delta(z mat.Matrix) mat.Matrix {
 func (this CrossEntropyCost) Init(a mat.Matrix, y mat.Vector) {
 	this.A = a
 	this.Y = y
+	this.Name = CROSS_ENTROPY
+}
+
+// GetName ...
+func (this CrossEntropyCost) GetName() string {
+	return this.Name
 }
 
 // utility functions
