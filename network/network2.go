@@ -53,7 +53,7 @@ func (net *Network2) Backprop(x *Input) (biasesByLayer, weightsByLayer []mat.Mat
 		activations = append(activations, activatn)
 	}
 	// Backward pass
-	net.Cost.Init(activations[len(activations)-1], x.Label.Vector)
+	net.Cost.Set(activations[len(activations)-1], x.Label.Vector)
 	delta := net.Cost.Delta(zs[len(zs)-1])
 	biasesByLayer[len(biasesByLayer)-1] = delta
 	weightsByLayer[len(weightsByLayer)-1] = matrix.Dot(delta.T(), activations[len(activations)-2])
@@ -164,6 +164,22 @@ func (net *Network2) Save(path string) error {
 		return err
 	}
 	return nil
+}
+
+// TotalCost returns the total cost for the data set 'data'.
+func (net *Network2) TotalCost(data Dataset, lambda float64) (c float64) {
+	for _, input := range data {
+		x := mat.NewVecDense(len(input.Data), input.Data)
+		a := net.FeedForward(x)
+		net.Cost.Set(a, input.Label.Vector)
+		c += net.Cost.Function() / float64(len(data))
+	}
+	sum := 0.0
+	for _, w := range net.weights {
+		sum += math.Pow(mat.Norm(w, 2), 2)
+	}
+	c += 0.5 * (lambda / float64(len(data))) * sum
+	return
 }
 
 // UpdateMiniBatch updates the network's weights and biases by applying gradient descent
