@@ -27,6 +27,33 @@ type Network2 struct {
 
 //--- METHODS
 
+// Accuracy returns the number of inputs in 'data' for which the neural network outputs the correct result.
+// The neural network's output is assumed to be the index of whichever neuron in the final layer has the highest activation.
+func (net *Network2) Accuracy(data Dataset) (sum int) {
+	for _, input := range data {
+		x := input.ToVector()
+		y := int(input.Label.Value)
+		output := net.FeedForward(x)
+		max := mat.Max(output)
+		_, c := output.Dims()
+		col := make([]float64, c)
+		for i := 0; i < c; i++ {
+			col[i] = output.At(0, i)
+		}
+		var result int
+		for idx, val := range col {
+			if val == max {
+				result = idx
+				break
+			}
+		}
+		if result == y {
+			sum++
+		}
+	}
+	return
+}
+
 // Backprop returns a tuple representing the gradient of the cost function `C_x`.
 // 'biasesByLayer' and 'weightsByLayer' are layer-by-layer lists of matrices, similar to `Network.biases` and `Network.weights`.
 func (net *Network2) Backprop(x *Input) (biasesByLayer, weightsByLayer []mat.Matrix) {
