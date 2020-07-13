@@ -14,31 +14,22 @@ const QUADRATIC_COST = "Quadratic"
 
 // QuadraticCost ...
 type QuadraticCost struct {
-	A    mat.Matrix
-	Y    mat.Vector
 	Name string
 }
 
 //--- METHODS
 
-// Function return the cost associated with an output `A` and desired output `Y`.
-func (this QuadraticCost) Function() float64 {
-	return math.Pow(0.5*mat.Norm(matrix.Subtract(this.A, this.Y.T()), 2), 2)
+// Function return the cost associated with an output `a` and desired output `y`.
+func (q QuadraticCost) Function(a mat.Matrix, y mat.Vector) float64 {
+	return math.Pow(0.5*mat.Norm(matrix.Subtract(a, y.T()), 2), 2)
 }
 
 // Delta returns the error delta from the output layer.
-func (this QuadraticCost) Delta(z mat.Matrix) mat.Matrix {
-	return matrix.Multiply(matrix.Subtract(this.A, this.Y.T()), matrix.Apply(activation.SigmoidPrime, z))
-}
-
-// Set ...
-func (this QuadraticCost) Set(a mat.Matrix, y mat.Vector) {
-	this.A = a
-	this.Y = y
-	this.Name = QUADRATIC_COST
+func (q QuadraticCost) Delta(a mat.Matrix, y mat.Vector, z mat.Matrix) mat.Matrix {
+	return matrix.Multiply(matrix.Subtract(a, y.T()), matrix.Apply(activation.SigmoidPrime, z))
 }
 
 // GetName ...
-func (this QuadraticCost) GetName() string {
-	return this.Name
+func (q QuadraticCost) GetName() string {
+	return q.Name
 }

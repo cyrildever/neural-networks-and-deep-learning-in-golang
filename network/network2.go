@@ -81,8 +81,7 @@ func (net *Network2) Backprop(x *Input) (biasesByLayer, weightsByLayer []mat.Mat
 		activations = append(activations, activatn)
 	}
 	// Backward pass
-	net.Cost.Set(activations[len(activations)-1], x.Label.Vector)
-	delta := net.Cost.Delta(zs[len(zs)-1])
+	delta := net.Cost.Delta(activations[len(activations)-1], x.Label.Vector, zs[len(zs)-1])
 	biasesByLayer[len(biasesByLayer)-1] = delta
 	weightsByLayer[len(weightsByLayer)-1] = matrix.Dot(delta.T(), activations[len(activations)-2])
 	if net.NumLayers() > 2 {
@@ -239,24 +238,24 @@ func (net *Network2) SGD(training Dataset, epochs, miniBatchSize int, eta, lambd
 		if monitorTrainingCost {
 			tc := net.TotalCost(training, lambda)
 			trainingCost = append(trainingCost, tc)
-			fmt.Printf("cost on training data: %f", tc)
+			fmt.Printf("cost on training data: %f\n", tc)
 		}
 		if monitorTrainingAccuracy {
 			ta := net.Accuracy(training)
 			trainingAccuracy = append(trainingAccuracy, ta)
-			fmt.Printf("accuracy on training data: %d / %d", ta, n)
+			fmt.Printf("accuracy on training data: %d / %d\n", ta, n)
 		}
 		if monitorEvaluationCost {
 			ec := net.TotalCost(evaluation, lambda)
 			evaluationCost = append(evaluationCost, ec)
-			fmt.Printf("cost on evalution data: %f", ec)
+			fmt.Printf("cost on evaluation data: %f\n", ec)
 		}
 		if monitorEvaluationAccuracy {
 			ea := net.Accuracy(evaluation)
 			evaluationAccuracy = append(evaluationAccuracy, ea)
-			fmt.Printf("accuracy on evaluation data: %d / %d", ea, nData)
+			fmt.Printf("accuracy on evaluation data: %d / %d\n", ea, nData)
 		}
-		fmt.Println()
+		fmt.Println("")
 	}
 	return
 }
@@ -264,10 +263,9 @@ func (net *Network2) SGD(training Dataset, epochs, miniBatchSize int, eta, lambd
 // TotalCost returns the total cost for the data set 'data'.
 func (net *Network2) TotalCost(data Dataset, lambda float64) (c float64) {
 	for _, input := range data {
-		x := mat.NewVecDense(len(input.Data), input.Data)
+		x := input.ToVector()
 		a := net.FeedForward(x)
-		net.Cost.Set(a, input.Label.Vector)
-		c += net.Cost.Function() / float64(len(data))
+		c += net.Cost.Function(a, input.Label.Vector) / float64(len(data))
 	}
 	sum := 0.0
 	for _, w := range net.weights {
@@ -368,9 +366,7 @@ func DefaultWeightInitializer(sizes []int) (biases, weights []mat.Matrix, err er
 	// Biases
 	bs := make([]mat.Matrix, len(sizes)-1)
 	for i, size := range sizes[1:] {
-		bs[i] = matrix.Apply(func(i, j int, v float64) float64 {
-			return math.Sqrt(v)
-		}, matrix.Random(1, size, 2))
+		bs[i] = matrix.Random(1, size, 2)
 	}
 
 	// Weights
@@ -380,7 +376,14 @@ func DefaultWeightInitializer(sizes []int) (biases, weights []mat.Matrix, err er
 	}
 	ws := make([]mat.Matrix, len(tuples))
 	for i, tuple := range tuples {
-		ws[i] = matrix.Random(tuple.J, tuple.I, 2)
+		rand := matrix.Random(tuple.J, tuple.I, 2)
+		ws[i] = matrix.Apply(func(i, j int, v float64) float64 {
+			x := float64(tuple.I)
+			if x < 0 {
+				x = -x
+			}
+			return v / math.Sqrt(x)
+		}, rand)
 	}
 	return bs, ws, nil
 }

@@ -37,6 +37,9 @@ func Dot(m, n mat.Matrix) mat.Matrix {
 // Log applies the natural logarithm element-wise on the passed Matrix.
 func Log(m mat.Matrix) mat.Matrix {
 	return Apply(func(i, j int, v float64) float64 {
+		if v == 0 {
+			return 0
+		}
 		return math.Log(v)
 	}, m)
 }
@@ -72,7 +75,7 @@ func Scale(s float64, m mat.Matrix) mat.Matrix {
 }
 
 // Subtract computes the substraction of two matrices.
-func Subtract(m, n mat.Matrix) *mat.Dense {
+func Subtract(m, n mat.Matrix) mat.Matrix {
 	r, c := m.Dims()
 	o := mat.NewDense(r, c, nil)
 	o.Sub(m, n)

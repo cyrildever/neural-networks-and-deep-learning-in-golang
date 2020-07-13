@@ -6,8 +6,7 @@ import (
 
 // Cost ...
 type Cost interface {
-	Function() float64
-	Delta(z mat.Matrix) mat.Matrix
-	Set(a mat.Matrix, y mat.Vector)
+	Function(a mat.Matrix, y mat.Vector) float64
+	Delta(a mat.Matrix, y mat.Vector, z mat.Matrix) mat.Matrix
 	GetName() string
 }
