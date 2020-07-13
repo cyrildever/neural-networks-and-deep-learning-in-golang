@@ -3,6 +3,7 @@ package network
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"math"
 	"neuraldeep/activation"
@@ -26,6 +27,33 @@ type Network2 struct {
 }
 
 //--- METHODS
+
+// Accuracy returns the number of inputs in 'data' for which the neural network outputs the correct result.
+// The neural network's output is assumed to be the index of whichever neuron in the final layer has the highest activation.
+func (net *Network2) Accuracy(data Dataset) (sum int) {
+	for _, input := range data {
+		x := input.ToVector()
+		y := int(input.Label.Value)
+		output := net.FeedForward(x)
+		max := mat.Max(output)
+		_, c := output.Dims()
+		col := make([]float64, c)
+		for i := 0; i < c; i++ {
+			col[i] = output.At(0, i)
+		}
+		var result int
+		for idx, val := range col {
+			if val == max {
+				result = idx
+				break
+			}
+		}
+		if result == y {
+			sum++
+		}
+	}
+	return
+}
 
 // Backprop returns a tuple representing the gradient of the cost function `C_x`.
 // 'biasesByLayer' and 'weightsByLayer' are layer-by-layer lists of matrices, similar to `Network.biases` and `Network.weights`.
@@ -53,7 +81,7 @@ func (net *Network2) Backprop(x *Input) (biasesByLayer, weightsByLayer []mat.Mat
 		activations = append(activations, activatn)
 	}
 	// Backward pass
-	net.Cost.Init(activations[len(activations)-1], x.Label.Vector)
+	net.Cost.Set(activations[len(activations)-1], x.Label.Vector)
 	delta := net.Cost.Delta(zs[len(zs)-1])
 	biasesByLayer[len(biasesByLayer)-1] = delta
 	weightsByLayer[len(weightsByLayer)-1] = matrix.Dot(delta.T(), activations[len(activations)-2])
@@ -164,6 +192,89 @@ func (net *Network2) Save(path string) error {
 		return err
 	}
 	return nil
+}
+
+// SGD trains the neural network using mini-batch stochastic gradient descent.
+// The 'trainingData' is a list of `Input` lines representing the training inputs and desired outputs.
+// The other non-optional parameters are self-explanatory, as is the regularization parameter 'lambda'.
+// The method also accepts 'evaluationData', usually either the validation or test data.
+// We can monitor the cost and accuracy on either the evaluation data or the training data, by setting the appropriate flags.
+// The method returns four lists: the (per-epoch) costs on the evaluation data, the accuracies on the evaluation data,
+// the costs on the training data, and the accuracies on the training data. So, for example, if we train for 30 epochs,
+// then the first list will be a 30-element list containing the cost on the evaluation data at the end of each epoch.
+// Note that the lists are empty if the corresponding flag is not set. These flags are set as boolean values in the 'monitors' parameter
+// in the following order: 'monitorEvaluationCost', 'monitorEvaluationAccuracy', 'monitorTrainingCost', 'monitorTrainingAccuracy'.
+func (net *Network2) SGD(training Dataset, epochs, miniBatchSize int, eta, lambda float64, evaluation Dataset, monitors ...bool) (evaluationCost []float64, evaluationAccuracy []int, trainingCost []float64, trainingAccuracy []int) {
+	var (
+		nData, n                                                                                       int
+		monitorEvaluationCost, monitorEvaluationAccuracy, monitorTrainingCost, monitorTrainingAccuracy bool
+	)
+	if len(evaluation) > 0 {
+		nData = len(evaluation)
+	}
+	n = len(training)
+	if len(monitors) > 0 {
+		monitorEvaluationCost = monitors[0]
+	}
+	if len(monitors) > 1 {
+		monitorEvaluationAccuracy = monitors[1]
+	}
+	if len(monitors) > 2 {
+		monitorTrainingCost = monitors[2]
+	}
+	if len(monitors) == 4 {
+		monitorTrainingAccuracy = monitors[3]
+	}
+	for j := 0; j < epochs; j++ {
+		training.Shuffle()
+		var miniBatches []Dataset
+		for k := range utils.XRange(0, n-miniBatchSize, miniBatchSize) {
+			miniBatch := training[k : k+miniBatchSize]
+			miniBatches = append(miniBatches, miniBatch)
+		}
+		for _, miniBatch := range miniBatches {
+			net.UpdateMiniBatch(miniBatch, eta, lambda, n)
+		}
+		fmt.Printf("epoch %d complete\n", j+1)
+		if monitorTrainingCost {
+			tc := net.TotalCost(training, lambda)
+			trainingCost = append(trainingCost, tc)
+			fmt.Printf("cost on training data: %f", tc)
+		}
+		if monitorTrainingAccuracy {
+			ta := net.Accuracy(training)
+			trainingAccuracy = append(trainingAccuracy, ta)
+			fmt.Printf("accuracy on training data: %d / %d", ta, n)
+		}
+		if monitorEvaluationCost {
+			ec := net.TotalCost(evaluation, lambda)
+			evaluationCost = append(evaluationCost, ec)
+			fmt.Printf("cost on evalution data: %f", ec)
+		}
+		if monitorEvaluationAccuracy {
+			ea := net.Accuracy(evaluation)
+			evaluationAccuracy = append(evaluationAccuracy, ea)
+			fmt.Printf("accuracy on evaluation data: %d / %d", ea, nData)
+		}
+		fmt.Println()
+	}
+	return
+}
+
+// TotalCost returns the total cost for the data set 'data'.
+func (net *Network2) TotalCost(data Dataset, lambda float64) (c float64) {
+	for _, input := range data {
+		x := mat.NewVecDense(len(input.Data), input.Data)
+		a := net.FeedForward(x)
+		net.Cost.Set(a, input.Label.Vector)
+		c += net.Cost.Function() / float64(len(data))
+	}
+	sum := 0.0
+	for _, w := range net.weights {
+		sum += math.Pow(mat.Norm(w, 2), 2)
+	}
+	c += 0.5 * (lambda / float64(len(data))) * sum
+	return
 }
 
 // UpdateMiniBatch updates the network's weights and biases by applying gradient descent

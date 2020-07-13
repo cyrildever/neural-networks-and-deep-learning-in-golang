@@ -31,8 +31,8 @@ func (this CrossEntropyCost) Delta(z mat.Matrix) mat.Matrix {
 	return matrix.Subtract(this.A, this.Y.T())
 }
 
-// Init ...
-func (this CrossEntropyCost) Init(a mat.Matrix, y mat.Vector) {
+// Set ...
+func (this CrossEntropyCost) Set(a mat.Matrix, y mat.Vector) {
 	this.A = a
 	this.Y = y
 	this.Name = CROSS_ENTROPY

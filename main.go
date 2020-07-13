@@ -21,7 +21,8 @@ import (
 // `$ ./neuraldeep -n=1 -op=test -layers=784,300,10 -data=test -useMNIST=true -load=true`
 // `& ./neuraldeep -n=1 -op=predict -layers=784,300,10 -label=5 -data="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,18,18,18,126,136,175,26,166,255,247,127,0,0,0,0,0,0,0,0,0,0,0,0,30,36,94,154,170,253,253,253,253,253,225,172,253,242,195,64,0,0,0,0,0,0,0,0,0,0,0,49,238,253,253,253,253,253,253,253,253,251,93,82,82,56,39,0,0,0,0,0,0,0,0,0,0,0,0,18,219,253,253,253,253,253,198,182,247,241,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,80,156,107,253,253,205,11,0,43,154,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,1,154,253,90,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,139,253,190,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,190,253,70,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,241,225,160,108,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,81,240,253,253,119,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,45,186,253,253,150,27,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,93,252,253,187,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,249,253,249,64,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,46,130,183,253,253,207,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,148,229,253,253,253,250,182,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,24,114,221,253,253,253,253,201,78,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,66,213,253,253,253,253,198,81,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,171,219,253,253,253,253,195,80,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,55,172,226,253,253,253,253,244,133,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,136,253,253,253,212,135,132,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" -load=true`
 //
-// `$ ./neuraldeep -n=2 -op=train -cost=crossEntropy -layers=784,300,10 -data=training -useMNIST=true -epochs=30 -size=10 -eta=3.0 -load=false`
+// `$ ./neuraldeep -n=2 -op=train -cost=crossEntropy -layers=784,300,10 -data=training -useMNIST=true -epochs=30 -size=10 -eta=3.0 -lambda=0.5 -evaluate=true -load=false`
+// `$ ./neuraldeep -n=2 -op=predict -cost=crossEntropy -layers=784,300,10 -data="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,18,18,18,126,136,175,26,166,255,247,127,0,0,0,0,0,0,0,0,0,0,0,0,30,36,94,154,170,253,253,253,253,253,225,172,253,242,195,64,0,0,0,0,0,0,0,0,0,0,0,49,238,253,253,253,253,253,253,253,253,251,93,82,82,56,39,0,0,0,0,0,0,0,0,0,0,0,0,18,219,253,253,253,253,253,198,182,247,241,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,80,156,107,253,253,205,11,0,43,154,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,1,154,253,90,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,139,253,190,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,190,253,70,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,241,225,160,108,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,81,240,253,253,119,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,45,186,253,253,150,27,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,93,252,253,187,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,249,253,249,64,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,46,130,183,253,253,207,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,148,229,253,253,253,250,182,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,24,114,221,253,253,253,253,201,78,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,66,213,253,253,253,253,198,81,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,171,219,253,253,253,253,195,80,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,55,172,226,253,253,253,253,244,133,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,136,253,253,253,212,135,132,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" -load=true -path="./data/saved/network2.json"`
 func main() {
 	// Parse command line arguments
 	n := flag.String("n", "1", "the network implementation to use: 1 | 2 | 3")
@@ -38,6 +39,7 @@ func main() {
 	pathToExisting := flag.String("path", "./data/saved/network/", "path to the existing file")
 	evaluate := flag.Bool("eval", false, "set to `true` to add evaluation at each training epoch")
 	costFunction := flag.String("cost", "crossEntropy", "cost function: crossEntropy | quadratic")
+	lambda := flag.Float64("lambda", 0.0, "the regularization parameter")
 
 	flag.Parse()
 
@@ -47,6 +49,8 @@ func main() {
 
 	// Choose the implementation
 	if *n == "1" {
+		// NETWORK.PY ###
+
 		// Initialize the network
 		var net *network.Network1
 		layers := strings.Split(*layersStr, ",")
@@ -172,6 +176,8 @@ func main() {
 			fmt.Println("invalid operation: ", *operation)
 		}
 	} else if *n == "2" {
+		// NETWORK2.PY ###
+
 		// Initialize the network
 		var net *network.Network2
 		layers := strings.Split(*layersStr, ",")
@@ -211,6 +217,98 @@ func main() {
 		}
 		lastLayerSize := sizes[len(sizes)-1]
 		fmt.Printf("network %s ready [nbOfLayers=%d, outputSize=%d]\n", *n, net.NumLayers(), lastLayerSize)
+
+		// Get the input data
+		dataset := network.Dataset{}
+		evalset := network.Dataset{}
+		if *useMNIST {
+			training, validation, test, err := network.LoadData()
+			if err != nil {
+				panic(err)
+			}
+			switch *dataStr {
+			case "test":
+				dataset = test
+				evalset = validation
+			case "training":
+				dataset = training
+				evalset = test
+			case "validation":
+				dataset = validation
+				evalset = test
+			}
+		} else {
+			if *dataStr != "" && *src == "" {
+				// Read from command line
+				dataArr := strings.Split(*dataStr, ",")
+				input := network.Input{
+					Data: make([]float64, len(dataArr)),
+				}
+				for i, d := range dataArr {
+					data, err := strconv.ParseFloat(d, 64)
+					if err != nil {
+						panic(err)
+					}
+					input.Data[i] = data
+				}
+				if *labelStr != "" {
+					label, err := strconv.ParseFloat(*labelStr, 64)
+					if err != nil {
+						panic(err)
+					}
+					input.Label = network.ToLabel(label, net.OutputSize())
+				}
+				dataset = append(dataset, &input)
+			} else if *src == "" {
+				// Retrieve from file
+				// TODO ####
+				fmt.Println("Not implemented yet")
+			}
+		}
+
+		// Process the operation
+		t1 := time.Now()
+		switch *operation {
+		case "predict":
+			fmt.Println("predicting...")
+			if *useMNIST {
+				// TODO ####
+				elapsed := time.Since(t1)
+				fmt.Printf("elapsed: %d ms\n", elapsed.Milliseconds())
+			} else {
+				a := dataset[0].ToVector()
+				output := net.FeedForward(a)
+				_, c := output.Dims()
+				if c != lastLayerSize {
+					panic(errors.New("size mismatch in result"))
+				}
+				elapsed := time.Since(t1)
+				fmt.Printf("elapsed: %d ms\n", elapsed.Milliseconds())
+				fmt.Printf("target: #%d\n", int(dataset[0].Label.Value))
+				for i := 0; i < c; i++ {
+					fmt.Printf("output #%d: %f\n", i, output.At(0, i))
+				}
+			}
+		case "test":
+			fmt.Println("Not implemented")
+		case "train":
+			fmt.Println("training...")
+			if *evaluate {
+				net.SGD(dataset, *epochs, *miniBatchSize, *eta, *lambda, evalset, true, true, true, true)
+			} else {
+				net.SGD(dataset, *epochs, *miniBatchSize, *eta, *lambda, network.Dataset{})
+			}
+			elapsed := time.Since(t1)
+			fmt.Printf("elapsed: %d ms\n", elapsed.Milliseconds())
+			fmt.Println("saving to ./data/saved/network2.json")
+			if err := net.Save("./data/saved/network2.json"); err != nil {
+				panic(err)
+			}
+			elapsed = time.Since(t0)
+			fmt.Printf("terminated in %f s\n", elapsed.Seconds())
+		default:
+			fmt.Println("invalid operation: ", *operation)
+		}
 	} else {
 		fmt.Println("not implemented yet")
 	}
