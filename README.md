@@ -15,7 +15,7 @@ A few notes on the results:
 
 ![Network 1](assets/network1.png)
 
-* Results on the second implementation (eq. `network2.py`) doesn't seem to go as high as the original implementation, the network reaching quickly a maximum after 6 epochs, no matter the parameters;
+* Results on the second implementation (eq. `network2.py`) finally went as high as the original implementation, but it took more epochs (rather 200 than 30), and a change of eta value (from 0.12 to 0.5) after the first 30 epochs, and still 300 neurons in the hidden layer;
 
 ![Network 2 with cross entropy](assets/network2-crossEntropy.png)
 
