@@ -6,7 +6,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-const CROSS_ENTROPY = "CrossEntropy"
+const CROSS_ENTROPY = "crossEntropy"
 
 //--- TYPES
 

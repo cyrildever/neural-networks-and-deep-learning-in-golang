@@ -12,6 +12,13 @@ Note that it's neither optimized nor production ready: it's just an adaptation t
 
 A few notes on the results:
 * For the first implementation (eq. `network.py`), the best results were reached by using 300 instead of 30 neurons in the hidden layer, which seems more coherent to results found by other researchers[^1] in the field for the same kind of network;
+
+![Network 1](assets/network1.png)
+
+* Results on the second implementation (eq. `network2.py`) doesn't seem to go as high as the original implementation, the network reaching quickly a maximum after 6 epochs, no matter the parameters;
+
+![Network 2 with cross entropy](assets/network2-crossEntropy.png)
+
 * // TODO.
 
 
@@ -32,6 +39,8 @@ $ ./neuraldeep -n=1 -op=train -layers=784,300,10 -data=training -useMNIST=true -
 
 ```
 Usage of ./neuraldeep:
+  -cost string
+        cost function: crossEntropy | quadratic (default "crossEntropy")
   -data string
         a single data set to feed the first layer (a comma-separated list of float64), or the name of the MNIST set (test | training | validation)
   -epochs int
@@ -42,6 +51,8 @@ Usage of ./neuraldeep:
         set to true to add evaluation at each training epoch
   -label string
         the label/target of the passed value as a float64 number
+  -lambda float
+        the regularization parameter
   -layers string
         comma-separated list of number of neurons per layer (the first one being the size of the input layer)
   -load true
@@ -56,7 +67,7 @@ Usage of ./neuraldeep:
         mini-batch size (default 10)
   -src string
         the source file to use as input data
-  -useMNIST
+  -mnist
         set to true to use MNIST dataset (the layers flag should start with 784 and end with 10)
 ```
 

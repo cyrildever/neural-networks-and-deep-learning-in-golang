@@ -238,7 +238,7 @@ func (net *Network2) SGD(training Dataset, epochs, miniBatchSize int, eta, lambd
 		if monitorTrainingCost {
 			tc := net.TotalCost(training, lambda)
 			trainingCost = append(trainingCost, tc)
-			fmt.Printf("cost on training data: %f\n", tc)
+			fmt.Printf("cost on training data: %.2f\n", tc)
 		}
 		if monitorTrainingAccuracy {
 			ta := net.Accuracy(training)
@@ -248,7 +248,7 @@ func (net *Network2) SGD(training Dataset, epochs, miniBatchSize int, eta, lambd
 		if monitorEvaluationCost {
 			ec := net.TotalCost(evaluation, lambda)
 			evaluationCost = append(evaluationCost, ec)
-			fmt.Printf("cost on evaluation data: %f\n", ec)
+			fmt.Printf("cost on evaluation data: %.2f\n", ec)
 		}
 		if monitorEvaluationAccuracy {
 			ea := net.Accuracy(evaluation)
@@ -338,7 +338,7 @@ func Initial(sizes []int, fn ...cost.Cost) (n *Network2, err error) {
 
 	var costFunction cost.Cost
 	if len(fn) != 1 {
-		costFunction = cost.CrossEntropyCost{}
+		costFunction, _ = cost.New(cost.CROSS_ENTROPY)
 	} else {
 		costFunction = fn[0]
 	}

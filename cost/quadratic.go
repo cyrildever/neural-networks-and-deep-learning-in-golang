@@ -8,7 +8,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-const QUADRATIC_COST = "Quadratic"
+const QUADRATIC_COST = "quadratic"
 
 //--- TYPES
 
@@ -21,7 +21,7 @@ type QuadraticCost struct {
 
 // Function return the cost associated with an output `a` and desired output `y`.
 func (q QuadraticCost) Function(a mat.Matrix, y mat.Vector) float64 {
-	return math.Pow(0.5*mat.Norm(matrix.Subtract(a, y.T()), 2), 2)
+	return 0.5 * math.Pow(mat.Norm(matrix.Subtract(a, y.T()), 2), 2)
 }
 
 // Delta returns the error delta from the output layer.
