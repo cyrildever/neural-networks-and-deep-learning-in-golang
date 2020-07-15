@@ -11,7 +11,7 @@ In order to practice neural networks in Go, I decided to make my own adaptation 
 Note that it's neither optimized nor production ready: it's just an adaptation to stay as close as possible to his Python code. Don't view this as some kind of Go reference on the subject, but just as a small exercise.
 
 A few notes on the results:
-* For the first implementation (eq. `network.py`), the best results were reached by using 300 instead of 30 neurons in the hidden layer, which seems more coherent to results found by other researchers[^1] in the field for the same kind of network;
+* For the first implementation (eq. `network.py`), the best results were reached by using 300 instead of 30 neurons in the hidden layer, which seems more coherent to results found by other researchers<a name="footnote1"><sup>1</sup></a> in the field for the same kind of network;
 
 ![Network 1](assets/network1.png)
 
@@ -81,5 +81,6 @@ Please see [Michael Nielsen's website](http://neuralnetworksanddeeplearning.com/
 <hr />
 &copy; 2020 Cyril Dever. All rights reserved.
 
+---
 
-[^1]: Stuart Russell, Peter Norvig, "Artificial Intelligence: A Modern Approach", 3rd Edition.
+<sup>[1](#footnote1)</sup>: Stuart Russell, Peter Norvig, "Artificial Intelligence: A Modern Approach", 3rd Edition.
