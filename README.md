@@ -19,7 +19,7 @@ A few notes on the results:
 
 ![Network 2 with cross entropy](assets/network2-crossEntropy.png)
 
-* // TODO.
+* I didn't try to adapt the third implementation (id. `network3.py`) as it would have needed to reimplement Theano's lib in Go as well. Please let me know if you have so that I can point to it.
 
 
 ### Installation
