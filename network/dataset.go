@@ -3,7 +3,7 @@ package network
 import (
 	"math"
 	"math/rand"
-	"neuraldeep/utils"
+	"neuraldeep/utils/python"
 	"time"
 
 	"gonum.org/v1/gonum/mat"
@@ -48,7 +48,7 @@ func (i *Input) ToVector() mat.Vector {
 // eg. if it's of size 10 then it means that the label could be any value from 0 to 9.
 func ToLabel(value float64, size int) *Label {
 	data := make([]float64, size)
-	for i := range utils.XRange(0, size-1, 1) {
+	for i := range python.XRange(0, size-1, 1) {
 		if int(math.Round(value)) == i {
 			data[i] = 1.0
 		} else {

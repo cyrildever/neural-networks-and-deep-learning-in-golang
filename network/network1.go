@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math"
 	"neuraldeep/activation"
-	"neuraldeep/utils"
 	"neuraldeep/utils/matrix"
+	"neuraldeep/utils/python"
 	"os"
 
 	"gonum.org/v1/gonum/mat"
@@ -59,7 +59,7 @@ func (net *Network1) Backprop(x *Input) (biasesByLayer, weightsByLayer []mat.Mat
 	biasesByLayer[len(biasesByLayer)-1] = delta
 	weightsByLayer[len(weightsByLayer)-1] = matrix.Dot(delta.T(), activations[len(activations)-2])
 	if net.NumLayers() > 2 {
-		for l := range utils.XRange(2, net.NumLayers()-1, 1) {
+		for l := range python.XRange(2, net.NumLayers()-1, 1) {
 			z := zs[len(zs)-l]
 			sp := matrix.Apply(activation.Sigmoid, z)
 			delta = matrix.Multiply(matrix.Dot(delta, net.weights[len(net.weights)-l+1]), sp)
@@ -128,7 +128,7 @@ func (net *Network1) SGD(training Dataset, epochs int, miniBatchSize int, eta fl
 	for j := 0; j < epochs; j++ {
 		training.Shuffle()
 		var miniBatches []Dataset
-		for k := range utils.XRange(0, n-miniBatchSize, miniBatchSize) {
+		for k := range python.XRange(0, n-miniBatchSize, miniBatchSize) {
 			miniBatch := training[k : k+miniBatchSize]
 			miniBatches = append(miniBatches, miniBatch)
 		}
@@ -243,7 +243,7 @@ func Init(sizes []int) (n *Network1, err error) {
 	}
 
 	// Weights
-	tuples, err := utils.Zip(sizes[:len(sizes)-1], sizes[1:])
+	tuples, err := python.Zip(sizes[:len(sizes)-1], sizes[1:])
 	if err != nil {
 		return
 	}

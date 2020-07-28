@@ -1,6 +1,6 @@
-package utils
+package python
 
-// XRange mimics Python's xrange providing a start index, a potentizlly included end index and an increment.
+// XRange mimics Python's xrange providing a start index, a potentially included end index and an increment.
 func XRange(start, end, increment int) <-chan int {
 	c := make(chan int)
 	go func() {

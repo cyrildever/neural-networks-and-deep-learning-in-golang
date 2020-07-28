@@ -34,7 +34,7 @@ $ go build
 ### Usage
 
 ```console
-$ ./neuraldeep -n=1 -op=train -layers=784,300,10 -data=training -useMNIST=true -epochs=30 -size=10 -eta=3.0 -load=false -eval=true
+$ ./neuraldeep -n=1 -op=train -layers="784,300,10" -data=training -useMNIST=true -epochs=30 -size=10 -eta=3.0 -load=false -eval=true
 ```
 
 ```
