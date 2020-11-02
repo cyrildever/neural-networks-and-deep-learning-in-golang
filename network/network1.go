@@ -239,7 +239,7 @@ func Init(sizes []int) (n *Network1, err error) {
 	// Biases
 	biases := make([]mat.Matrix, len(sizes)-1)
 	for i, size := range sizes[1:] {
-		biases[i] = matrix.Random(1, size, 2)
+		biases[i] = matrix.Random(1, size, 2.)
 	}
 
 	// Weights
@@ -249,7 +249,7 @@ func Init(sizes []int) (n *Network1, err error) {
 	}
 	weights := make([]mat.Matrix, len(tuples))
 	for i, tuple := range tuples {
-		weights[i] = matrix.Random(tuple.J, tuple.I, 2)
+		weights[i] = matrix.Random(tuple.J, tuple.I, 2.)
 	}
 
 	return &Network1{

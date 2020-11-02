@@ -267,7 +267,7 @@ func (net *Network2) TotalCost(data Dataset, lambda float64) (c float64) {
 		a := net.FeedForward(x)
 		c += net.Cost.Function(a, input.Label.Vector) / float64(len(data))
 	}
-	sum := 0.0
+	sum := 0.
 	for _, w := range net.weights {
 		sum += math.Pow(mat.Norm(w, 2), 2)
 	}
@@ -366,7 +366,7 @@ func DefaultWeightInitializer(sizes []int) (biases, weights []mat.Matrix, err er
 	// Biases
 	bs := make([]mat.Matrix, len(sizes)-1)
 	for i, size := range sizes[1:] {
-		bs[i] = matrix.Random(1, size, 2)
+		bs[i] = matrix.Random(1, size, 2.)
 	}
 
 	// Weights
@@ -376,7 +376,7 @@ func DefaultWeightInitializer(sizes []int) (biases, weights []mat.Matrix, err er
 	}
 	ws := make([]mat.Matrix, len(tuples))
 	for i, tuple := range tuples {
-		rand := matrix.Random(tuple.J, tuple.I, 2)
+		rand := matrix.Random(tuple.J, tuple.I, 2.)
 		ws[i] = matrix.Apply(func(i, j int, v float64) float64 {
 			x := float64(tuple.I)
 			if x < 0 {
@@ -398,7 +398,7 @@ func LargeWeightInitializer(sizes []int) (biases, weights []mat.Matrix, err erro
 	// Biases
 	bs := make([]mat.Matrix, len(sizes)-1)
 	for i, size := range sizes[1:] {
-		bs[i] = matrix.Random(1, size, 2)
+		bs[i] = matrix.Random(1, size, 2.)
 	}
 
 	// Weights
@@ -408,7 +408,7 @@ func LargeWeightInitializer(sizes []int) (biases, weights []mat.Matrix, err erro
 	}
 	ws := make([]mat.Matrix, len(tuples))
 	for i, tuple := range tuples {
-		ws[i] = matrix.Random(tuple.J, tuple.I, 2)
+		ws[i] = matrix.Random(tuple.J, tuple.I, 2.)
 	}
 	return bs, ws, nil
 }
