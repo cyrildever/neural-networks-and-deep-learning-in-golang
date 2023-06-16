@@ -74,7 +74,7 @@ Usage of ./neuraldeep:
 
 ## License
 
-The code in Go is distributed under an [MIT license](LICENSE).
+The code in Go is distributed under an [MIT license](LICENSE). \
 Please see [Michael Nielsen's website](http://neuralnetworksanddeeplearning.com/) for his authorization.
 
 
