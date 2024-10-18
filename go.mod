@@ -1,10 +1,16 @@
 module neuraldeep
 
-go 1.13
+go 1.22.0
+
+toolchain go1.22.1
 
 require (
-	github.com/google/go-cmp v0.5.9 // indirect
-	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
-	gonum.org/v1/gonum v0.13.0
+	gonum.org/v1/gonum v0.15.1
 	gotest.tools v2.2.0+incompatible
+)
+
+require (
+	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
 )

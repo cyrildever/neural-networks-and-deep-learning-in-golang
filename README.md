@@ -79,7 +79,7 @@ Please see [Michael Nielsen's website](http://neuralnetworksanddeeplearning.com/
 
 
 <hr />
-&copy; 2020-2023 Cyril Dever. All rights reserved.
+&copy; 2020-2024 Cyril Dever. All rights reserved.
 
 ---
 
